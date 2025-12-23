@@ -1,0 +1,49 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+artifacts/
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets
+secrets.json
+appsettings.*.json
+
+# JetBrains
+*.iml
+
+# Temporary files
+*.tmp
+*~
+
+# Benchmark artifacts
+BenchmarkDotNet.Artifacts/
+
+# dotnet-user-secrets
+secrets.json
+
+# Local tool manifest
+.tool/ 
