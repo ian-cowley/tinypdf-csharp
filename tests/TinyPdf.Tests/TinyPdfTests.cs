@@ -111,7 +111,10 @@ public class TinyPdfTests
         string md = "- Item 1";
         byte[] pdf = TinyPdf.Markdown(md, new TinyPdf.MarkdownOptions(Compress: false));
         string content = Encoding.Latin1.GetString(pdf);
-        Assert.Contains("- Item 1", content);
+        // The renderer now emits the list bullet and the item text in separate text operators,
+        // so assert presence of the item text and the bullet prefix rather than the combined string.
+        Assert.Contains("Item 1", content);
+        Assert.Contains("(- ", content);
     }
 
     [Fact]

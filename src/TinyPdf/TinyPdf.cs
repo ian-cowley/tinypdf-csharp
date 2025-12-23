@@ -546,27 +546,105 @@ public class TinyPdf
             {
                 opts ??= new TextOptions();
                 string align = opts.Align ?? "left";
-                double tx = x;
+
+                // If width provided, wrap text into multiple lines
+                if (opts.Width.HasValue)
+                {
+                    double maxW = opts.Width.Value;
+                    // Simple word wrap
+                    var span = str.Span;
+                    var lines = new List<ReadOnlyMemory<char>>();
+
+                    double spaceW = TinyPdf.MeasureText(" ", size);
+                    int pos = 0; int lineStart = -1; int lineEnd = -1; double currentW = 0;
+                    while (pos < span.Length)
+                    {
+                        int next = span[pos..].IndexOf(' ');
+                        int wordStart = pos; int wordEnd = next == -1 ? span.Length : pos + next;
+                        var wordSpan = span.Slice(wordStart, wordEnd - wordStart);
+                        double w = TinyPdf.MeasureText(wordSpan, size);
+
+                        if (lineStart == -1)
+                        {
+                            lineStart = wordStart; lineEnd = wordEnd; currentW = w;
+                        }
+                        else
+                        {
+                            if (currentW + spaceW + w <= maxW) { lineEnd = wordEnd; currentW += spaceW + w; }
+                            else { lines.Add(str.Slice(lineStart, lineEnd - lineStart)); lineStart = wordStart; lineEnd = wordEnd; currentW = w; }
+                        }
+                        pos = (next == -1) ? span.Length : wordEnd + 1;
+                    }
+                    if (lineStart != -1) lines.Add(str.Slice(lineStart, lineEnd - lineStart));
+                    if (lines.Count == 0) lines.Add(ReadOnlyMemory<char>.Empty);
+
+                    double lineHeight = size * 1.2; // simple line spacing
+
+                    for (int i = 0; i < lines.Count; i++)
+                    {
+                        var line = lines[i];
+                        string useAlign = align;
+                        double tx = x;
+                        if (useAlign != "left")
+                        {
+                            double textWidth;
+                            if (i == 0 && !prefix.IsEmpty)
+                                textWidth = TinyPdf.MeasureText(prefix.Span, size) + TinyPdf.MeasureText(line.Span, size);
+                            else
+                                textWidth = TinyPdf.MeasureText(line.Span, size);
+
+                            if (useAlign == "center") tx = x + (opts.Width.Value - textWidth) / 2;
+                            if (useAlign == "right") tx = x + opts.Width.Value - textWidth;
+                        }
+
+                        var rgb = ParseColor(opts.Color);
+                        if (rgb != null)
+                        {
+                            BufferWriteDouble(_writer, rgb[0], 3); BufferWriteAscii(_writer, " ");
+                            BufferWriteDouble(_writer, rgb[1], 3); BufferWriteAscii(_writer, " ");
+                            BufferWriteDouble(_writer, rgb[2], 3); BufferWriteAscii(_writer, " rg\n");
+                        }
+
+                        BufferWriteAscii(_writer, "BT\n");
+                        string fontTag = opts.Font switch { PdfFont.Times => "/F2", PdfFont.Courier => "/F3", _ => "/F1" };
+                        BufferWriteAscii(_writer, fontTag); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, size, 2); BufferWriteAscii(_writer, " Tf\n");
+
+                        double py = y - i * lineHeight;
+                        BufferWriteDouble(_writer, tx, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, py, 2); BufferWriteAscii(_writer, " Td\n");
+
+                        if (i == 0)
+                            BufferWritePdfString(_writer, prefix.Span, line.Span);
+                        else
+                            BufferWritePdfString(_writer, ReadOnlySpan<char>.Empty, line.Span);
+
+                        BufferWriteAscii(_writer, " Tj\n");
+                        BufferWriteAscii(_writer, "ET\n");
+                    }
+
+                    return;
+                }
+
+                double tx_default = x;
                 if (align != "left" && opts.Width.HasValue)
                 {
                     double textWidth = TinyPdf.MeasureText(str.Span, size);
-                    if (align == "center") tx = x + (opts.Width.Value - textWidth) / 2;
-                    if (align == "right") tx = x + opts.Width.Value - textWidth;
+                    if (align == "center") tx_default = x + (opts.Width.Value - textWidth) / 2;
+                    if (align == "right") tx_default = x + opts.Width.Value - textWidth;
                 }
 
-                var rgb = ParseColor(opts.Color);
-                if (rgb != null)
+                var rgbDefault = ParseColor(opts.Color);
+                if (rgbDefault != null)
                 {
-                    BufferWriteDouble(_writer, rgb[0], 3); BufferWriteAscii(_writer, " ");
-                    BufferWriteDouble(_writer, rgb[1], 3); BufferWriteAscii(_writer, " ");
-                    BufferWriteDouble(_writer, rgb[2], 3); BufferWriteAscii(_writer, " rg\n");
+                    BufferWriteDouble(_writer, rgbDefault[0], 3); BufferWriteAscii(_writer, " ");
+                    BufferWriteDouble(_writer, rgbDefault[1], 3); BufferWriteAscii(_writer, " ");
+                    BufferWriteDouble(_writer, rgbDefault[2], 3); BufferWriteAscii(_writer, " rg\n");
                 }
 
                 BufferWriteAscii(_writer, "BT\n");
-                string fontTag = opts.Font switch { PdfFont.Times => "/F2", PdfFont.Courier => "/F3", _ => "/F1" };
-                BufferWriteAscii(_writer, fontTag); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, size, 2); BufferWriteAscii(_writer, " Tf\n");
+                string fontTagDefault = opts.Font switch { PdfFont.Times => "/F2", PdfFont.Courier => "/F3", _ => "/F1" };
+                BufferWriteAscii(_writer, fontTagDefault); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, size, 2); BufferWriteAscii(_writer, " Tf\n");
 
-                BufferWriteDouble(_writer, tx, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y, 2); BufferWriteAscii(_writer, " Td\n");
+                BufferWriteDouble(_writer, tx_default, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y, 2); BufferWriteAscii(_writer, " Td\n");
 
                 BufferWritePdfString(_writer, prefix.Span, str.Span);
                 BufferWriteAscii(_writer, " Tj\n");
@@ -797,11 +875,95 @@ public class TinyPdf
                 {
                     var it = pageData.Items[i]; double py = pageData.Ys[i];
                     if (it.Rule) ctx.Line(M, py, W - M, py, "#e0e0e0", 0.5);
-                    else if (!it.Text.IsEmpty) ctx.Text(it.Prefix, it.Text, M + it.Indent, py, it.Size, new TextOptions(Color: it.Color));
+                    else if (!it.Text.IsEmpty)
+                    {
+                        // Inline markdown rendering: support **bold**, _italic_, `code`
+                        double x = M + it.Indent;
+                        // Render prefix first (list bullets / numbers)
+                        if (!it.Prefix.IsEmpty)
+                        {
+                            var pref = it.Prefix.Span;
+                            string prefStr = new string(pref);
+                            ctx.Text(ReadOnlyMemory<char>.Empty, prefStr.AsMemory(), x, py, it.Size);
+                            // advance x by width of prefix
+                            x += TinyPdf.MeasureText(prefStr, it.Size);
+                        }
+
+                        var span = it.Text.Span;
+                        int pos = 0;
+                        while (pos < span.Length)
+                        {
+                            // detect code span
+                            if (span[pos] == '`')
+                            {
+                                int end = pos + 1;
+                                while (end < span.Length && span[end] != '`') end++;
+                                var run = span.Slice(pos + 1, Math.Max(0, end - pos - 1));
+                                string runStr = new string(run);
+                                // render in monospaced font
+                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.Courier));
+                                x += TinyPdf.MeasureText(runStr, it.Size, PdfFont.Courier);
+                                pos = Math.Min(end + 1, span.Length);
+                                continue;
+                            }
+
+                            // detect bold **
+                            if (pos + 1 < span.Length && span[pos] == '*' && span[pos + 1] == '*')
+                            {
+                                int end = pos + 2;
+                                while (end + 1 < span.Length && !(span[end] == '*' && span[end + 1] == '*')) end++;
+                                int len = Math.Max(0, end - (pos + 2));
+                                var run = (end + 1 < span.Length) ? span.Slice(pos + 2, len) : span.Slice(pos + 2, len);
+                                string runStr = new string(run);
+                                // approximate bold by slightly larger size
+                                double boldSize = it.Size * 1.05;
+                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, boldSize, new TextOptions(Font: PdfFont.Helvetica, Color: it.Color));
+                                x += TinyPdf.MeasureText(runStr, boldSize); // use default font for measurement
+                                pos = (end + 2 <= span.Length) ? end + 2 : span.Length;
+                                continue;
+                            }
+
+                            // detect italic _
+                            if (span[pos] == '_' )
+                            {
+                                int end = pos + 1;
+                                while (end < span.Length && span[end] != '_') end++;
+                                var run = span.Slice(pos + 1, Math.Max(0, end - pos - 1));
+                                string runStr = new string(run);
+                                // approximate italic by using same size but darker color
+                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.Helvetica, Color: "#111111"));
+                                x += TinyPdf.MeasureText(runStr, it.Size); // use default font for measurement
+                                pos = Math.Min(end + 1, span.Length);
+                                continue;
+                            }
+
+                            // normal text run until next special char
+                            int j = pos;
+                            while (j < span.Length && span[j] != '`' && !(j + 1 < span.Length && span[j] == '*' && span[j + 1] == '*') && span[j] != '_') j++;
+                            var normal = span.Slice(pos, j - pos);
+                            string normalStr = new string(normal);
+                            ctx.Text(ReadOnlyMemory<char>.Empty, normalStr.AsMemory(), x, py, it.Size, new TextOptions(Color: it.Color, Font: PdfFont.Helvetica));
+                            x += TinyPdf.MeasureText(normalStr, it.Size); // use default font for measurement
+                            pos = j;
+                        }
+                    }
                 }
             });
         }
 
         return builder.Build();
+    }
+}
+
+public static class PageContextExtensions
+{
+    public static void Text(this TinyPdf.IPageContext ctx, string text, double x, double y, double size, TinyPdf.TextOptions? opts = null)
+    {
+        ctx.Text(ReadOnlyMemory<char>.Empty, text.AsMemory(), x, y, size, opts);
+    }
+
+    public static void Text(this TinyPdf.IPageContext ctx, string prefix, string text, double x, double y, double size, TinyPdf.TextOptions? opts = null)
+    {
+        ctx.Text(prefix.AsMemory(), text.AsMemory(), x, y, size, opts);
     }
 }
