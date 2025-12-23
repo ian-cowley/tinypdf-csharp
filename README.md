@@ -5,7 +5,7 @@
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
-- < 720 lines of code (~714 lines currently)
+- 840 lines of code
 - Zero external dependencies
 - Text rendering (`Helvetica`, `Times`, `Courier`) with alignment support
 - Shapes (Rectangles, Lines)
