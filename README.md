@@ -1,7 +1,4 @@
 # TinyPdf C#
-
-[![License](./LICENSE)](LICENSE) [![Build status](https://github.com/your-username/tinypdf-csharp/actions/workflows/dotnet.yml/badge.svg)](https://github.com/your-username/tinypdf-csharp/actions)
-
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
@@ -24,7 +21,7 @@ Add the `TinyPdf.csproj` to your solution and reference it from your project. Ex
 dotnet add reference ../src/TinyPdf/TinyPdf.csproj
 ```
 
-There is no published NuGet package — include the project in your solution or build it locally.
+There is no published NuGet package â€” include the project in your solution or build it locally.
 
 ## Usage
 
@@ -80,11 +77,11 @@ dotnet run -p benchmarks/TinyPdf.Benchmarks
 Recent local benchmark results (machine: .NET 10, DEBUG run). These show Markdown conversion speed for different input sizes; "Default" = no compression, "Compressed" = with Flate compression enabled.
 
 - 100 lines
-  - Default: 42.6 µs (mean)
-  - Compressed: 62.0 µs (mean)
+  - Default: 42.6 Âµs (mean)
+  - Compressed: 62.0 Âµs (mean)
 - 1,000 lines
-  - Default: 455.1 µs (mean)
-  - Compressed: 616.3 µs (mean)
+  - Default: 455.1 Âµs (mean)
+  - Compressed: 616.3 Âµs (mean)
 - 5,000 lines
   - Default: 2.40 ms (mean)
   - Compressed: 3.56 ms (mean)
@@ -94,6 +91,7 @@ Allocations grow with input size (the benchmark output includes per-test managed
 ## Notes
 This C# port preserves the core logic of the original TypeScript library (font width tables and PDF object serialization) so generated PDFs are compatible in structure. The library is intentionally small and dependency-free to keep it easy to embed in small projects.
 
-By default output streams are compressed (FlateDecode) — set `Builder.Compress = false` or pass `new MarkdownOptions(Compress: false)` to `TinyPdf.Markdown` to disable compression.
+By default output streams are compressed (FlateDecode) â€” set `Builder.Compress = false` or pass `new MarkdownOptions(Compress: false)` to `TinyPdf.Markdown` to disable compression.
 
 Security: do not commit secrets or sensitive configuration to this repository. Use `dotnet user-secrets` or environment variables for local development.
+
