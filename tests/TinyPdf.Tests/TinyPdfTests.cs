@@ -10,27 +10,27 @@ public class TinyPdfTests
     [Fact]
     public void TestMeasureText()
     {
-        double width = TinyPdf.MeasureText("Hello World", 12);
+        double width = TinyPdfCreate.MeasureText("Hello World", 12);
         Assert.Equal(62.004, width, 3);
     }
 
     [Fact]
     public void TestMeasureText_EmptyString()
     {
-        Assert.Equal(0, TinyPdf.MeasureText("", 12));
+        Assert.Equal(0, TinyPdfCreate.MeasureText("", 12));
     }
 
     [Fact]
     public void TestMeasureText_NonAscii()
     {
-        double width = TinyPdf.MeasureText("中", 12);
+        double width = TinyPdfCreate.MeasureText("中", 12);
         Assert.Equal(556 * 12 / 1000.0, width, 3);
     }
 
     [Fact]
     public void TestMinimalPdf()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(ctx => {
             ctx.Text(ReadOnlyMemory<char>.Empty, "Hello World".AsMemory(), 50, 700, 12);
@@ -48,7 +48,7 @@ public class TinyPdfTests
     [Fact]
     public void TestCustomPageSize()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(400, 600, ctx => {});
         byte[] pdf = builder.Build();
@@ -59,10 +59,10 @@ public class TinyPdfTests
     [Fact]
     public void TestTextAlignment()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(ctx => {
-            ctx.Text(ReadOnlyMemory<char>.Empty, "Hi".AsMemory(), 50, 700, 12, new TinyPdf.TextOptions(Align: "center", Width: 100));
+            ctx.Text(ReadOnlyMemory<char>.Empty, "Hi".AsMemory(), 50, 700, 12, new TinyPdfCreate.TextOptions(Align: "center", Width: 100));
         });
         byte[] pdf = builder.Build();
         string content = Encoding.Latin1.GetString(pdf);
@@ -72,7 +72,7 @@ public class TinyPdfTests
     [Fact]
     public void TestTextEscaping()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(ctx => {
             ctx.Text(ReadOnlyMemory<char>.Empty, "Hello (world) \\".AsMemory(), 50, 700, 12);
@@ -85,7 +85,7 @@ public class TinyPdfTests
     [Fact]
     public void TestColors()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(ctx => {
             ctx.Rect(0, 0, 100, 100, "#aabbcc");
@@ -99,7 +99,7 @@ public class TinyPdfTests
     public void TestMarkdown_Header()
     {
         string md = "# Header";
-        byte[] pdf = TinyPdf.Markdown(md, new TinyPdf.MarkdownOptions(Compress: false));
+        byte[] pdf = TinyPdfCreate.Markdown(md, new TinyPdfCreate.MarkdownOptions(Compress: false));
         string content = Encoding.Latin1.GetString(pdf);
         Assert.Contains("Header", content);
         Assert.Contains("/F1 22.00 Tf", content);
@@ -109,7 +109,7 @@ public class TinyPdfTests
     public void TestMarkdown_List()
     {
         string md = "- Item 1";
-        byte[] pdf = TinyPdf.Markdown(md, new TinyPdf.MarkdownOptions(Compress: false));
+        byte[] pdf = TinyPdfCreate.Markdown(md, new TinyPdfCreate.MarkdownOptions(Compress: false));
         string content = Encoding.Latin1.GetString(pdf);
         // The renderer now emits the list bullet and the item text in separate text operators,
         // so assert presence of the item text and the bullet prefix rather than the combined string.
@@ -121,7 +121,7 @@ public class TinyPdfTests
     public void TestMarkdown_Rule()
     {
         string md = "---";
-        byte[] pdf = TinyPdf.Markdown(md, new TinyPdf.MarkdownOptions(Compress: false));
+        byte[] pdf = TinyPdfCreate.Markdown(md, new TinyPdfCreate.MarkdownOptions(Compress: false));
         string content = Encoding.Latin1.GetString(pdf);
         Assert.Contains("S", content); 
     }
@@ -131,7 +131,7 @@ public class TinyPdfTests
     {
         var sb = new StringBuilder();
         for (int i = 0; i < 100; i++) sb.AppendLine($"Line {i}");
-        byte[] pdf = TinyPdf.Markdown(sb.ToString(), new TinyPdf.MarkdownOptions(Compress: false));
+        byte[] pdf = TinyPdfCreate.Markdown(sb.ToString(), new TinyPdfCreate.MarkdownOptions(Compress: false));
         string content = Encoding.Latin1.GetString(pdf);
         int pageCount = System.Text.RegularExpressions.Regex.Matches(content, "/Type /Page").Count;
         Assert.True(pageCount > 1);
@@ -148,7 +148,7 @@ public class TinyPdfTests
         jpeg[7] = 0x01; jpeg[8] = 0x2C;
         jpeg[9] = 0x00; jpeg[10] = 0xC8;
 
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(ctx => {
             ctx.Image(jpeg, 50, 500, 100, 150);
@@ -162,12 +162,12 @@ public class TinyPdfTests
     [Fact]
     public void TestMultiFontRendering()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = false;
         builder.Page(ctx => {
-            ctx.Text(ReadOnlyMemory<char>.Empty, "Helvetica".AsMemory(), 50, 700, 12, new TinyPdf.TextOptions(Font: TinyPdf.PdfFont.Helvetica));
-            ctx.Text(ReadOnlyMemory<char>.Empty, "Times".AsMemory(), 50, 650, 12, new TinyPdf.TextOptions(Font: TinyPdf.PdfFont.Times));
-            ctx.Text(ReadOnlyMemory<char>.Empty, "Courier".AsMemory(), 50, 600, 12, new TinyPdf.TextOptions(Font: TinyPdf.PdfFont.Courier));
+            ctx.Text(ReadOnlyMemory<char>.Empty, "Helvetica".AsMemory(), 50, 700, 12, new TinyPdfCreate.TextOptions(Font: TinyPdfCreate.PdfFont.Helvetica));
+            ctx.Text(ReadOnlyMemory<char>.Empty, "Times".AsMemory(), 50, 650, 12, new TinyPdfCreate.TextOptions(Font: TinyPdfCreate.PdfFont.Times));
+            ctx.Text(ReadOnlyMemory<char>.Empty, "Courier".AsMemory(), 50, 600, 12, new TinyPdfCreate.TextOptions(Font: TinyPdfCreate.PdfFont.Courier));
         });
         byte[] pdf = builder.Build();
         string content = Encoding.Latin1.GetString(pdf);
@@ -182,7 +182,7 @@ public class TinyPdfTests
     [Fact]
     public void TestStreamCompression()
     {
-        var builder = TinyPdf.Create();
+        var builder = TinyPdfCreate.Create();
         builder.Compress = true;
         builder.Page(ctx => {
             ctx.Text(ReadOnlyMemory<char>.Empty, ("This should be compressed " + new string('x', 100)).AsMemory(), 50, 700, 12);

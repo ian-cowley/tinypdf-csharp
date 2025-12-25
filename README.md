@@ -29,10 +29,10 @@ There is no published NuGet package — include the project in your solution or 
 ```csharp
 using TinyPdf;
 
+var builder = TinyPdfCreate.Create();
 // disable compression if you need uncompressed streams
 // builder.Compress = false;
 
-var builder = new TinyPdf.Builder();
 builder.Page(ctx => {
     ctx.Text("Hello World", 50, 700, 24);
     ctx.Rect(50, 650, 100, 20, "#FF0000");
@@ -47,9 +47,9 @@ File.WriteAllBytes("output.pdf", pdf);
 using TinyPdf;
 
 // disable compression via options
-// var opts = new TinyPdf.MarkdownOptions(Compress: false);
+var options = new TinyPdfCreate.MarkdownOptions(Compress: false);
 string md = "# Header\n\nThis is a paragraph.\n\n- List item";
-byte[] pdf = TinyPdf.Markdown(md);
+byte[] pdf = TinyPdfCreate.Markdown(md, options);
 File.WriteAllBytes("markdown.pdf", pdf);
 ```
 
@@ -91,7 +91,7 @@ Allocations grow with input size (the benchmark output includes per-test managed
 ## Notes
 This C# port preserves the core logic of the original TypeScript library (font width tables and PDF object serialization) so generated PDFs are compatible in structure. The library is intentionally small and dependency-free to keep it easy to embed in small projects.
 
-By default output streams are compressed (FlateDecode) — set `Builder.Compress = false` or pass `new MarkdownOptions(Compress: false)` to `TinyPdf.Markdown` to disable compression.
+By default output streams are compressed (FlateDecode) — set `builder.Compress = false` or pass `new TinyPdfCreate.MarkdownOptions(Compress: false)` to `TinyPdfCreate.Markdown` to disable compression.
 
 Security: do not commit secrets or sensitive configuration to this repository. Use `dotnet user-secrets` or environment variables for local development.
 

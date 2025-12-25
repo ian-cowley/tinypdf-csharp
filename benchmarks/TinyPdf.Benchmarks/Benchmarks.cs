@@ -22,12 +22,12 @@ public class Benchmarks
     [Benchmark]
     public byte[] MarkdownDefault()
     {
-        return TinyPdf.TinyPdf.Markdown(largeText, new TinyPdf.TinyPdf.MarkdownOptions(Compress: false));
+        return TinyPdf.TinyPdfCreate.Markdown(largeText, new TinyPdf.TinyPdfCreate.MarkdownOptions(Compress: false));
     }
 
     [Benchmark]
     public byte[] MarkdownCompressed()
     {
-        return TinyPdf.TinyPdf.Markdown(largeText, new TinyPdf.TinyPdf.MarkdownOptions(Compress: true));
+        return TinyPdf.TinyPdfCreate.Markdown(largeText, new TinyPdf.TinyPdfCreate.MarkdownOptions(Compress: true));
     }
 }

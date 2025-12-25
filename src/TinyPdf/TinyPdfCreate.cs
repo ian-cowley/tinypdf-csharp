@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TinyPdf;
 
-public class TinyPdf
+public class TinyPdfCreate
 {
     public static Builder Create() => new Builder();
 
@@ -419,7 +419,7 @@ public class TinyPdf
 
         public void Page(Action<IPageContext> fn) => Page(612, 792, fn);
 
-        public double MeasureText(string str, double size) => TinyPdf.MeasureText(str, size);
+        public double MeasureText(string str, double size) => TinyPdfCreate.MeasureText(str, size);
 
         public byte[] Build()
         {
@@ -555,14 +555,14 @@ public class TinyPdf
                     var span = str.Span;
                     var lines = new List<ReadOnlyMemory<char>>();
 
-                    double spaceW = TinyPdf.MeasureText(" ", size);
+                    double spaceW = TinyPdfCreate.MeasureText(" ", size);
                     int pos = 0; int lineStart = -1; int lineEnd = -1; double currentW = 0;
                     while (pos < span.Length)
                     {
                         int next = span[pos..].IndexOf(' ');
                         int wordStart = pos; int wordEnd = next == -1 ? span.Length : pos + next;
                         var wordSpan = span.Slice(wordStart, wordEnd - wordStart);
-                        double w = TinyPdf.MeasureText(wordSpan, size);
+                        double w = TinyPdfCreate.MeasureText(wordSpan, size);
 
                         if (lineStart == -1)
                         {
@@ -589,9 +589,9 @@ public class TinyPdf
                         {
                             double textWidth;
                             if (i == 0 && !prefix.IsEmpty)
-                                textWidth = TinyPdf.MeasureText(prefix.Span, size) + TinyPdf.MeasureText(line.Span, size);
+                                textWidth = TinyPdfCreate.MeasureText(prefix.Span, size) + TinyPdfCreate.MeasureText(line.Span, size);
                             else
-                                textWidth = TinyPdf.MeasureText(line.Span, size);
+                                textWidth = TinyPdfCreate.MeasureText(line.Span, size);
 
                             if (useAlign == "center") tx = x + (opts.Width.Value - textWidth) / 2;
                             if (useAlign == "right") tx = x + opts.Width.Value - textWidth;
@@ -627,7 +627,7 @@ public class TinyPdf
                 double tx_default = x;
                 if (align != "left" && opts.Width.HasValue)
                 {
-                    double textWidth = TinyPdf.MeasureText(str.Span, size);
+                    double textWidth = TinyPdfCreate.MeasureText(str.Span, size);
                     if (align == "center") tx_default = x + (opts.Width.Value - textWidth) / 2;
                     if (align == "right") tx_default = x + opts.Width.Value - textWidth;
                 }
@@ -886,7 +886,7 @@ public class TinyPdf
                             string prefStr = new string(pref);
                             ctx.Text(ReadOnlyMemory<char>.Empty, prefStr.AsMemory(), x, py, it.Size);
                             // advance x by width of prefix
-                            x += TinyPdf.MeasureText(prefStr, it.Size);
+                            x += TinyPdfCreate.MeasureText(prefStr, it.Size);
                         }
 
                         var span = it.Text.Span;
@@ -902,7 +902,7 @@ public class TinyPdf
                                 string runStr = new string(run);
                                 // render in monospaced font
                                 ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.Courier));
-                                x += TinyPdf.MeasureText(runStr, it.Size, PdfFont.Courier);
+                                x += TinyPdfCreate.MeasureText(runStr, it.Size, PdfFont.Courier);
                                 pos = Math.Min(end + 1, span.Length);
                                 continue;
                             }
@@ -918,7 +918,7 @@ public class TinyPdf
                                 // approximate bold by slightly larger size
                                 double boldSize = it.Size * 1.05;
                                 ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, boldSize, new TextOptions(Font: PdfFont.Helvetica, Color: it.Color));
-                                x += TinyPdf.MeasureText(runStr, boldSize); // use default font for measurement
+                                x += TinyPdfCreate.MeasureText(runStr, boldSize); // use default font for measurement
                                 pos = (end + 2 <= span.Length) ? end + 2 : span.Length;
                                 continue;
                             }
@@ -932,7 +932,7 @@ public class TinyPdf
                                 string runStr = new string(run);
                                 // approximate italic by using same size but darker color
                                 ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.Helvetica, Color: "#111111"));
-                                x += TinyPdf.MeasureText(runStr, it.Size); // use default font for measurement
+                                x += TinyPdfCreate.MeasureText(runStr, it.Size); // use default font for measurement
                                 pos = Math.Min(end + 1, span.Length);
                                 continue;
                             }
@@ -943,7 +943,7 @@ public class TinyPdf
                             var normal = span.Slice(pos, j - pos);
                             string normalStr = new string(normal);
                             ctx.Text(ReadOnlyMemory<char>.Empty, normalStr.AsMemory(), x, py, it.Size, new TextOptions(Color: it.Color, Font: PdfFont.Helvetica));
-                            x += TinyPdf.MeasureText(normalStr, it.Size); // use default font for measurement
+                            x += TinyPdfCreate.MeasureText(normalStr, it.Size); // use default font for measurement
                             pos = j;
                         }
                     }
@@ -957,12 +957,12 @@ public class TinyPdf
 
 public static class PageContextExtensions
 {
-    public static void Text(this TinyPdf.IPageContext ctx, string text, double x, double y, double size, TinyPdf.TextOptions? opts = null)
+    public static void Text(this TinyPdfCreate.IPageContext ctx, string text, double x, double y, double size, TinyPdfCreate.TextOptions? opts = null)
     {
         ctx.Text(ReadOnlyMemory<char>.Empty, text.AsMemory(), x, y, size, opts);
     }
 
-    public static void Text(this TinyPdf.IPageContext ctx, string prefix, string text, double x, double y, double size, TinyPdf.TextOptions? opts = null)
+    public static void Text(this TinyPdfCreate.IPageContext ctx, string prefix, string text, double x, double y, double size, TinyPdfCreate.TextOptions? opts = null)
     {
         ctx.Text(prefix.AsMemory(), text.AsMemory(), x, y, size, opts);
     }

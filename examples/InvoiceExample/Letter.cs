@@ -36,8 +36,8 @@ internal static class Letter
 
         var md = sb.ToString();
 
-        var opts = new TinyPdf.MarkdownOptions(Width: 468, Height: 792, Margin: 72, Compress: true);
-        var pdf = TinyPdf.Markdown(md, opts);
+        var opts = new TinyPdfCreate.MarkdownOptions(Width: 468, Height: 792, Margin: 72, Compress: true);
+        var pdf = TinyPdfCreate.Markdown(md, opts);
 
         File.WriteAllBytes("letter.pdf", pdf);
         Console.WriteLine("letter.pdf generated.");

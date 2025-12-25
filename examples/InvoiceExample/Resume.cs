@@ -92,8 +92,8 @@ internal static class Resume
 
         var md = sb.ToString();
 
-        var opts = new TinyPdf.MarkdownOptions(Width: 512, Height: 792, Margin: 50, Compress: true);
-        var pdf = TinyPdf.Markdown(md, opts);
+        var opts = new TinyPdfCreate.MarkdownOptions(Width: 512, Height: 792, Margin: 50, Compress: true);
+        var pdf = TinyPdfCreate.Markdown(md, opts);
 
         File.WriteAllBytes("resume.pdf", pdf);
         Console.WriteLine("resume.pdf generated.");
