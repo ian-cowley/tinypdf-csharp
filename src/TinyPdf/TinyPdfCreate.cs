@@ -12,6 +12,7 @@ public class TinyPdfCreate
     public enum PdfFont { Helvetica, Times, Courier }
 
     public record TextOptions(string? Align = "left", double? Width = null, string Color = "#000000", PdfFont Font = PdfFont.Helvetica);
+    public record LinkOptions(string? Underline = null);
 
     private static readonly Dictionary<PdfFont, int[]> FontWidths = new()
     {
@@ -40,6 +41,7 @@ public class TinyPdfCreate
         void Rect(double x, double y, double w, double h, string fill);
         void Line(double x1, double y1, double x2, double y2, string stroke, double lineWidth = 1);
         void Image(byte[] jpegBytes, double x, double y, double w, double h);
+        void Link(string url, double x, double y, double w, double h, LinkOptions? opts = null);
     }
 
     public class Ref
@@ -390,9 +392,10 @@ public class TinyPdfCreate
         {
             var writer = new ArrayBufferWriter<byte>(1024);
             var images = new List<(string Name, Ref Ref)>();
+            var links = new List<(string Url, double[] Rect)>();
             int imageCount = 0;
 
-            var ctx = new PageContextImpl(this, writer, images, imageCount, (newCount) => imageCount = newCount);
+            var ctx = new PageContextImpl(this, writer, images, imageCount, (newCount) => imageCount = newCount, links);
             fn(ctx);
 
             var contentBytes = writer.WrittenSpan.ToArray();
@@ -401,7 +404,25 @@ public class TinyPdfCreate
             var xobjects = new Dictionary<string, object>();
             foreach (var img in images) xobjects[img.Name[1..]] = img.Ref;
 
-            var pageRef = AddObject(new Dictionary<string, object>
+            var annots = new List<Ref>();
+            foreach (var lnk in links)
+            {
+                annots.Add(AddObject(new Dictionary<string, object>
+                {
+                    ["Type"] = "/Annot",
+                    ["Subtype"] = "/Link",
+                    ["Rect"] = new List<double> { lnk.Rect[0], lnk.Rect[1], lnk.Rect[2], lnk.Rect[3] },
+                    ["Border"] = new List<int> { 0, 0, 0 },
+                    ["A"] = new Dictionary<string, object>
+                    {
+                        ["Type"] = "/Action",
+                        ["S"] = "/URI",
+                        ["URI"] = lnk.Url
+                    }
+                }));
+            }
+
+            var pageDict = new Dictionary<string, object>
             {
                 ["Type"] = "/Page",
                 ["Parent"] = null!, // Will be set in build
@@ -412,7 +433,10 @@ public class TinyPdfCreate
                     ["Font"] = new Dictionary<string, object> { ["F1"] = null!, ["F2"] = null!, ["F3"] = null! },
                     ["XObject"] = xobjects.Count > 0 ? xobjects : null!
                 }
-            });
+            };
+            if (annots.Count > 0) pageDict["Annots"] = annots;
+
+            var pageRef = AddObject(pageDict);
 
             _pages.Add(pageRef);
         }
@@ -532,14 +556,16 @@ public class TinyPdfCreate
             private readonly List<(string Name, Ref Ref)> _images;
             private int _imageCount;
             private readonly Action<int> _updateImageCount;
+            private readonly List<(string Url, double[] Rect)> _links;
 
-            public PageContextImpl(Builder builder, ArrayBufferWriter<byte> writer, List<(string Name, Ref Ref)> images, int imageCount, Action<int> updateImageCount)
+            public PageContextImpl(Builder builder, ArrayBufferWriter<byte> writer, List<(string Name, Ref Ref)> images, int imageCount, Action<int> updateImageCount, List<(string Url, double[] Rect)> links)
             {
                 _builder = builder;
                 _writer = writer;
                 _images = images;
                 _imageCount = imageCount;
                 _updateImageCount = updateImageCount;
+                _links = links;
             }
 
             public void Text(ReadOnlyMemory<char> prefix, ReadOnlyMemory<char> str, double x, double y, double size, TextOptions? opts = null)
@@ -718,6 +744,25 @@ public class TinyPdfCreate
                 BufferWriteDouble(_writer, w, 2); BufferWriteAscii(_writer, " 0 0 "); BufferWriteDouble(_writer, h, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, x, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y, 2); BufferWriteAscii(_writer, " cm\n");
                 BufferWriteAscii(_writer, imgName); BufferWriteAscii(_writer, " Do\n"); BufferWriteAscii(_writer, "Q\n");
+            }
+
+            public void Link(string url, double x, double y, double w, double h, LinkOptions? opts = null)
+            {
+                _links.Add((url, new double[] { x, y, x + w, y + h }));
+                if (opts?.Underline != null)
+                {
+                    var rgb = ParseColor(opts.Underline);
+                    if (rgb != null)
+                    {
+                        BufferWriteAscii(_writer, "0.75 w\n");
+                        BufferWriteDouble(_writer, rgb[0], 3); BufferWriteAscii(_writer, " ");
+                        BufferWriteDouble(_writer, rgb[1], 3); BufferWriteAscii(_writer, " ");
+                        BufferWriteDouble(_writer, rgb[2], 3); BufferWriteAscii(_writer, " RG\n");
+                        BufferWriteDouble(_writer, x, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y + 2, 2); BufferWriteAscii(_writer, " m\n");
+                        BufferWriteDouble(_writer, x + w, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y + 2, 2); BufferWriteAscii(_writer, " l\n");
+                        BufferWriteAscii(_writer, "S\n");
+                    }
+                }
             }
         }
     }

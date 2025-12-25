@@ -47,6 +47,7 @@ internal static class Invoice
                 {
                     // Company & billing info (first page only)
                     p.Text("Acme Corporation", margin, 670, 16);
+                    p.Link("https://github.com/ian-cowley/tinypdf-csharp", margin, 670, 150, 16, new TinyPdfCreate.LinkOptions(Underline: "#2563eb"));
                     p.Text("123 Business Street", margin, 652, 11, new TinyPdfCreate.TextOptions(Color: "#666"));
                     p.Text("New York, NY 10001", margin, 638, 11, new TinyPdfCreate.TextOptions(Color: "#666"));
 

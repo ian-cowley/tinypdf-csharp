@@ -196,4 +196,22 @@ public class TinyPdfTests
         Assert.Contains("/Filter /FlateDecode", compressedContent);
         Assert.True(compressedPdf.Length < uncompressedPdf.Length, "Compressed PDF should be smaller than uncompressed PDF");
     }
+    [Fact]
+    public void TestClickableLink()
+    {
+        var builder = TinyPdfCreate.Create();
+        builder.Compress = false;
+        builder.Page(ctx => {
+            ctx.Text(ReadOnlyMemory<char>.Empty, "Click here".AsMemory(), 50, 700, 12);
+            ctx.Link("https://github.com", 50, 700, 50, 12, new TinyPdfCreate.LinkOptions(Underline: "#0000ff"));
+        });
+        byte[] pdf = builder.Build();
+        string content = Encoding.Latin1.GetString(pdf);
+
+        Assert.Contains("/Type /Annot", content);
+        Assert.Contains("/Subtype /Link", content);
+        Assert.Contains("/URI (https://github.com)", content);
+        Assert.Contains("/Rect [50 700 100 712]", content);
+        Assert.Contains("0.000 0.000 1.000 RG", content); // Underline color
+    }
 }

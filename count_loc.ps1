@@ -1,4 +1,4 @@
-$lines = Get-Content 'src\TinyPdf\TinyPdf.cs'
+$lines = Get-Content 'src\TinyPdf\TinyPdfCreate.cs'
 $count = 0
 foreach ($line in $lines) {
     $trimmed = $line.Trim()
@@ -6,4 +6,4 @@ foreach ($line in $lines) {
         $count++
     }
 }
-Write-Output "Actual lines of code in TinyPdf.cs: $count"
+Write-Output "Actual lines of code in TinyPdfCreate.cs: $count"

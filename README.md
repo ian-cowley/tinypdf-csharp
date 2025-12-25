@@ -2,9 +2,10 @@
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
-- 840 lines of code
+- 882 lines of code
 - Zero external dependencies
 - Text rendering (`Helvetica`, `Times`, `Courier`) with alignment support
+- Clickable links with optional underlining
 - Shapes (Rectangles, Lines)
 - JPEG images
 - Optional Flate (deflate) compression for PDF streams
@@ -57,6 +58,15 @@ File.WriteAllBytes("markdown.pdf", pdf);
 ```csharp
 builder.Page(842, 595, ctx => { // A4 Landscape
     ctx.Line(0, 0, 842, 595, "#0000FF", 2);
+});
+```
+
+### Clickable Links
+```csharp
+builder.Page(ctx => {
+    ctx.Text("Visit our website", 50, 700, 12);
+    // Link(url, x, y, width, height, options)
+    ctx.Link("https://github.com/ian-cowley/tinypdf-csharp", 50, 700, 100, 12, new TinyPdfCreate.LinkOptions(Underline: "#2563eb"));
 });
 ```
 
