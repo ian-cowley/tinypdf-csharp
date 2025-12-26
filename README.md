@@ -1,4 +1,5 @@
 # TinyPdf C#
+[![NuGet version](https://img.shields.io/nuget/v/TinyPdf.svg)](https://www.nuget.org/packages/TinyPdf/)
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
@@ -16,13 +17,17 @@ A minimal PDF creation library for .NET 10, ported from the original [tinypdf](h
 This project targets `.NET 10`.
 
 ## Installation
-Add the `TinyPdf.csproj` to your solution and reference it from your project. Example using the CLI (from your consuming project directory):
+Install the package via the .NET CLI:
+
+```bash
+dotnet add package TinyPdf
+```
+
+Alternatively, you can add the `TinyPdf.csproj` to your solution and reference it from your project:
 
 ```bash
 dotnet add reference ../src/TinyPdf/TinyPdf.csproj
 ```
-
-There is no published NuGet package — include the project in your solution or build it locally.
 
 ## Usage
 
@@ -84,19 +89,13 @@ To run the benchmarks project:
 dotnet run -p benchmarks/TinyPdf.Benchmarks
 ```
 
-Recent local benchmark results (machine: .NET 10, DEBUG run). These show Markdown conversion speed for different input sizes; "Default" = no compression, "Compressed" = with Flate compression enabled.
+## Publishing (Maintainers)
+To release a new version to NuGet and GitHub:
+1. Open PowerShell in the repository root.
+2. Run: `./release.ps1`
+3. Follow the prompts for the commit message.
 
-- 100 lines
-  - Default: 42.6 µs (mean)
-  - Compressed: 62.0 µs (mean)
-- 1,000 lines
-  - Default: 455.1 µs (mean)
-  - Compressed: 616.3 µs (mean)
-- 5,000 lines
-  - Default: 2.40 ms (mean)
-  - Compressed: 3.56 ms (mean)
-
-Allocations grow with input size (the benchmark output includes per-test managed allocations). Note: the benchmarks were executed in a DEBUG build on the local machine; running in RELEASE will generally produce lower times.
+The script will automatically increment the patch version, commit, push, and create a GitHub tag, which triggers the CI/CD workflow.
 
 ## Notes
 This C# port preserves the core logic of the original TypeScript library (font width tables and PDF object serialization) so generated PDFs are compatible in structure. The library is intentionally small and dependency-free to keep it easy to embed in small projects.
