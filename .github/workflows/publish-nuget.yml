@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       # Map the secret here so ALL steps can see it in their 'if' conditions
