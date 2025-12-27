@@ -3,15 +3,20 @@ using System.IO;
 
 namespace TinyPdf;
 
-internal static class Report
+public static class Report
 {
-    public static void GenerateReport()
+    public static byte[] GenerateReport(int iteration = 0, bool writeToFile = true)
     {
         var doc = TinyPdfCreate.Create();
 
         doc.Page(612, 792, (p) =>
         {
             double margin = 50, pw = 512;
+
+            if (iteration > 0)
+            {
+                p.Text($"Performance Test Iteration: {iteration}", margin, 760, 10, new TinyPdfCreate.TextOptions(Color: "#666"));
+            }
 
             p.Text("Quarterly Report", margin, 740, 18, new TinyPdfCreate.TextOptions(Font: TinyPdfCreate.PdfFont.Times));
             p.Text("Q1 2025", margin, 722, 12, new TinyPdfCreate.TextOptions(Color: "#4b5563"));
@@ -140,7 +145,12 @@ internal static class Report
             p.Text(longNotes, margin, notesY, 10, new TinyPdfCreate.TextOptions(Width: pw, Color: "#6b7280"));
         });
 
-        File.WriteAllBytes("report.pdf", doc.Build());
-        Console.WriteLine("report.pdf generated.");
+        var pdf = doc.Build();
+        if (writeToFile)
+        {
+            File.WriteAllBytes("report.pdf", pdf);
+            Console.WriteLine("report.pdf generated.");
+        }
+        return pdf;
     }
 }

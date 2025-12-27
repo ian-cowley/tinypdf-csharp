@@ -3,15 +3,20 @@ using System.IO;
 
 namespace TinyPdf;
 
-internal static class Receipt
+public static class Receipt
 {
-    public static void GenerateReceipt()
+    public static byte[] GenerateReceipt(int iteration = 0, bool writeToFile = true)
     {
         var doc = TinyPdfCreate.Create();
 
         doc.Page(612, 792, (p) =>
         {
             double margin = 50, pw = 512;
+
+            if (iteration > 0)
+            {
+                p.Text($"Performance Test Iteration: {iteration}", margin, 740, 10, new TinyPdfCreate.TextOptions(Color: "#666"));
+            }
 
             p.Text("RECEIPT", margin, 720, 18, new TinyPdfCreate.TextOptions(Font: TinyPdfCreate.PdfFont.Times));
 
@@ -44,7 +49,12 @@ internal static class Receipt
             p.Text("Thank you for your purchase!", margin, 120, 12, new TinyPdfCreate.TextOptions(Align: "center", Width: pw, Color: "#6b7280"));
         });
 
-        File.WriteAllBytes("receipt.pdf", doc.Build());
-        Console.WriteLine("receipt.pdf generated.");
+        var pdf = doc.Build();
+        if (writeToFile)
+        {
+            File.WriteAllBytes("receipt.pdf", pdf);
+            Console.WriteLine("receipt.pdf generated.");
+        }
+        return pdf;
     }
 }

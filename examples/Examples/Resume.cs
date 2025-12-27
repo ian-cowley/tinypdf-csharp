@@ -4,12 +4,16 @@ using System.Text;
 
 namespace TinyPdf;
 
-internal static class Resume
+public static class Resume
 {
-    public static void GenerateResume()
+    public static byte[] GenerateResume(int iteration = 0, bool writeToFile = true)
     {
         var sb = new StringBuilder();
-
+        if (iteration > 0)
+        {
+            sb.AppendLine($"Performance Test Iteration: {iteration}");
+            sb.AppendLine("---");
+        }
         sb.AppendLine("# John Doe");
         sb.AppendLine();
         sb.AppendLine("_Staff Software Engineer - Distributed Systems & Platform_");
@@ -23,7 +27,7 @@ internal static class Resume
         sb.AppendLine("## Experience");
         sb.AppendLine();
 
-        sb.AppendLine("### Staff Software Engineer — Nimbus Cloud (Remote)");
+        sb.AppendLine("### Staff Software Engineer â€” Nimbus Cloud (Remote)");
         sb.AppendLine();
         sb.AppendLine("**Jan 2022 - Present**");
         sb.AppendLine();
@@ -36,7 +40,7 @@ internal static class Resume
         sb.AppendLine("- Mentored a team of 6 engineers; introduced quarterly reviews and an RFC process.");
         sb.AppendLine();
 
-        sb.AppendLine("### Senior Software Engineer — Atlas Payments");
+        sb.AppendLine("### Senior Software Engineer â€” Atlas Payments");
         sb.AppendLine();
         sb.AppendLine("**May 2018 - Dec 2021**");
         sb.AppendLine();
@@ -48,14 +52,14 @@ internal static class Resume
         sb.AppendLine("- Created a developer-facing SDK that decreased integration time for partners by 60%.");
         sb.AppendLine();
 
-        sb.AppendLine("### Software Engineer — BrightApps");
+        sb.AppendLine("### Software Engineer â€” BrightApps");
         sb.AppendLine();
         sb.AppendLine("**Jun 2014 - Apr 2018**");
         sb.AppendLine();
         sb.AppendLine("Developed core features for the company's SaaS platform including multi-tenant data models, role-based access control, and performance optimizations across SQL and NoSQL stores.");
         sb.AppendLine();
 
-        sb.AppendLine("### Principal Engineer (Contract) — CoreAnalytics");
+        sb.AppendLine("### Principal Engineer (Contract) â€” CoreAnalytics");
         sb.AppendLine();
         sb.AppendLine("**2013 - 2014**");
         sb.AppendLine();
@@ -83,9 +87,9 @@ internal static class Resume
 
         sb.AppendLine("## Education & Certifications");
         sb.AppendLine();
-        sb.AppendLine("- B.S. Computer Science, University of Example — 2014");
+        sb.AppendLine("- B.S. Computer Science, University of Example â€” 2014");
         sb.AppendLine("- Certified Kubernetes Application Developer (CKAD)");
-        sb.AppendLine("- AWS Certified Solutions Architect – Associate");
+        sb.AppendLine("- AWS Certified Solutions Architect â€“ Associate");
         sb.AppendLine();
 
         sb.AppendLine("References available upon request.");
@@ -95,7 +99,11 @@ internal static class Resume
         var opts = new TinyPdfCreate.MarkdownOptions(Width: 512, Height: 792, Margin: 50, Compress: true);
         var pdf = TinyPdfCreate.Markdown(md, opts);
 
-        File.WriteAllBytes("resume.pdf", pdf);
-        Console.WriteLine("resume.pdf generated.");
+        if (writeToFile)
+        {
+            File.WriteAllBytes("resume.pdf", pdf);
+            Console.WriteLine("resume.pdf generated.");
+        }
+        return pdf;
     }
 }

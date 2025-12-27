@@ -4,9 +4,9 @@ using System.Text;
 
 namespace TinyPdf;
 
-internal static class Invoice
+public static class Invoice
 {
-    public static void GenerateInvoice()
+    public static byte[] GenerateInvoice(int iteration = 0, bool writeToFile = true)
     {
         var doc = TinyPdfCreate.Create();
 
@@ -42,6 +42,11 @@ internal static class Invoice
                 p.Rect(margin, headerY, pw, headerHeight, "#2563eb");
                 p.Text("INVOICE", 55, headerY + 10, 24, new TinyPdfCreate.TextOptions(Color: "#fff", Font: TinyPdfCreate.PdfFont.Times));
                 p.Text("#INV-2025-001", 472, headerY + 12, 12, new TinyPdfCreate.TextOptions(Color: "#fff"));
+
+                if (iteration > 0)
+                {
+                    p.Text($"Performance Test Iteration: {iteration}", margin, headerY + headerHeight + 5, 10, new TinyPdfCreate.TextOptions(Color: "#666"));
+                }
 
                 if (isFirstPage)
                 {
@@ -126,7 +131,12 @@ internal static class Invoice
             });
         }
 
-        File.WriteAllBytes("invoice.pdf", doc.Build());
-        Console.WriteLine("invoice.pdf generated.");
+        var pdf = doc.Build();
+        if (writeToFile)
+        {
+            File.WriteAllBytes("invoice.pdf", pdf);
+            Console.WriteLine("invoice.pdf generated.");
+        }
+        return pdf;
     }
 }

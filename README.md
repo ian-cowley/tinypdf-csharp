@@ -94,11 +94,27 @@ dotnet test
 ```
 
 ## Benchmarks
-To run the benchmarks project:
+To run the high-concurrency performance tests (1000 iterations per example):
+```bash
+dotnet run --project benchmarks/PerformanceTests/PerformanceTests.csproj
+```
 
+Alternatively, to run the BenchmarkDotNet suite:
 ```bash
 dotnet run -p benchmarks/TinyPdf.Benchmarks
 ```
+
+## Performance Results
+The following results were obtained by generating 1000 PDFs for each example in parallel:
+
+| Example | Iterations | Total Time (ms) | Avg Time (ms) | Complexity |
+|---------|------------|-----------------|---------------|------------|
+| Invoice | 1000 | 270.48 | 0.2705 | Methods: ~320 |
+| Letter | 1000 | 146.33 | 0.1463 | Markdown: ~60 lines |
+| PieChart | 1000 | 40.10 | 0.0401 | Methods: ~20 |
+| Receipt | 1000 | 35.31 | 0.0353 | Methods: ~18 |
+| Report | 1000 | 44.86 | 0.0449 | Methods: ~56 |
+| Resume | 1000 | 99.03 | 0.0990 | Markdown: ~100 lines |
 
 ## Publishing (Maintainers)
 To release a new version to NuGet and GitHub:

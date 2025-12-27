@@ -1,13 +1,18 @@
 using TinyPdf;
 
-internal class PieChart
+public static class PieChart
 {
-    public static void GeneratePieChart()
+    public static byte[] GeneratePieChart(int iteration = 0, bool writeToFile = true)
     {
         var builder = TinyPdfCreate.Create();
 
         builder.Page(612, 792, ctx =>
         {
+            if (iteration > 0)
+            {
+                ctx.Text(ReadOnlyMemory<char>.Empty, $"Performance Test Iteration: {iteration}".AsMemory(), 156, 775, 12, new TinyPdfCreate.TextOptions(Color: "#666"));
+            }
+
             ctx.Text(ReadOnlyMemory<char>.Empty, "Sales by Region - Q1 2024".AsMemory(), 156, 750, 24);
 
             double cx = 306;
@@ -61,7 +66,12 @@ internal class PieChart
             ctx.Text(ReadOnlyMemory<char>.Empty, "Total Sales: $1,000,000".AsMemory(), 240, 150, 14);
         });
 
-        File.WriteAllBytes("pie-chart.pdf", builder.Build());
-        Console.WriteLine("Generated: pie-chart.pdf");
+        var pdf = builder.Build();
+        if (writeToFile)
+        {
+            File.WriteAllBytes("pie-chart.pdf", pdf);
+            Console.WriteLine("pie-chart.pdf generated.");
+        }
+        return pdf;
     }
 }

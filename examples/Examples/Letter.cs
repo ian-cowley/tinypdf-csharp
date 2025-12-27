@@ -4,12 +4,17 @@ using System.Text;
 
 namespace TinyPdf;
 
-internal static class Letter
+public static class Letter
 {
-    public static void GenerateLetter()
+    public static byte[] GenerateLetter(int iteration = 0, bool writeToFile = true)
     {
         // Build a markdown document so the library's Markdown renderer handles wrapping and pagination
         var sb = new StringBuilder();
+        if (iteration > 0)
+        {
+            sb.AppendLine($"Performance Test Iteration: {iteration}");
+            sb.AppendLine("---");
+        }
         sb.AppendLine("Acme Corporation");
         sb.AppendLine("123 Business Street");
         sb.AppendLine("New York, NY 10001");
@@ -39,7 +44,11 @@ internal static class Letter
         var opts = new TinyPdfCreate.MarkdownOptions(Width: 468, Height: 792, Margin: 72, Compress: true);
         var pdf = TinyPdfCreate.Markdown(md, opts);
 
-        File.WriteAllBytes("letter.pdf", pdf);
-        Console.WriteLine("letter.pdf generated.");
+        if (writeToFile)
+        {
+            File.WriteAllBytes("letter.pdf", pdf);
+            Console.WriteLine("letter.pdf generated.");
+        }
+        return pdf;
     }
 }
