@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
     <PackageId>TinyPdf</PackageId>
     <Authors>Ian Cowley</Authors>
     <Description>TinyPdf is a minimal in-process PDF generation library targeting .NET.</Description>
@@ -15,5 +15,34 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="NuGetREADME.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="TinyPdfCreate.Builder.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.Builder.PageContextImpl.cs">
+      <DependentUpon>TinyPdfCreate.Builder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.IPageContext.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.Models.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.PdfObject.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.PooledBufferStream.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.PooledBufferWriter.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.Ref.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Update="TinyPdfCreate.PdfFont.cs">
+      <DependentUpon>TinyPdfCreate.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

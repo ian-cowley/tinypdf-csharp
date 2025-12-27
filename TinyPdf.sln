@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{3C0CCB4B
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "examples\InvoiceExample\Examples.csproj", "{C35010AB-5BD9-3220-4415-568575B28826}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "examples\Examples\Examples.csproj", "{C35010AB-5BD9-3220-4415-568575B28826}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

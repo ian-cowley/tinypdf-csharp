@@ -3,11 +3,11 @@
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
-- 882 lines of code
+- 1027 lines of code
 - Zero external dependencies
 - Text rendering (`Helvetica`, `Times`, `Courier`) with alignment support
 - Clickable links with optional underlining
-- Shapes (Rectangles, Lines)
+- Shapes (Rectangles, Lines, Circles, Wedges)
 - JPEG images
 - Optional Flate (deflate) compression for PDF streams
 - Markdown to PDF conversion
@@ -66,6 +66,17 @@ builder.Page(842, 595, ctx => { // A4 Landscape
 });
 ```
 
+### Charts and Shapes
+```csharp
+builder.Page(ctx => {
+    // ctx.Circle(cx, cy, radius, fill, stroke, lineWidth)
+    ctx.Circle(100, 700, 50, "#3498db");
+
+    // ctx.Wedge(cx, cy, radius, startAngle, endAngle, fill, stroke, lineWidth)
+    ctx.Wedge(300, 700, 50, 0, 90, "#e74c3c", "#000000", 2);
+});
+```
+
 ### Clickable Links
 ```csharp
 builder.Page(ctx => {
@@ -103,4 +114,5 @@ This C# port preserves the core logic of the original TypeScript library (font w
 By default output streams are compressed (FlateDecode) — set `builder.Compress = false` or pass `new TinyPdfCreate.MarkdownOptions(Compress: false)` to `TinyPdfCreate.Markdown` to disable compression.
 
 Security: do not commit secrets or sensitive configuration to this repository. Use `dotnet user-secrets` or environment variables for local development.
+
 

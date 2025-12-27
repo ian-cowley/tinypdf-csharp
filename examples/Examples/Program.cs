@@ -9,5 +9,6 @@ internal class Program
         Report.GenerateReport();
         Letter.GenerateLetter();
         Receipt.GenerateReceipt();
+        PieChart.GeneratePieChart();
     }
 }

@@ -8,6 +8,19 @@ if (-not (Test-Path $csprojPath)) {
     exit 1
 }
 
+# 0. Update LOC in README
+Write-Host "Calculating lines of code..."
+$loc = . ./count_loc.ps1
+Write-Host "Total LOC: $loc"
+
+$readmePath = "README.md"
+if (Test-Path $readmePath) {
+    Write-Host "Updating $readmePath..."
+    $readme = Get-Content $readmePath -Raw
+    $newReadme = $readme -replace '-\s*\d+\s*lines of code', "- $loc lines of code"
+    $newReadme | Set-Content $readmePath
+}
+
 # 1. Read the current version
 [xml]$csproj = Get-Content $csprojPath
 $currentVersionStr = $csproj.Project.PropertyGroup.Version
