@@ -11,6 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyPdf.Benchmarks", "bench
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{3C0CCB4B-2445-4F5B-929D-3B9B5873FA13}"
 	ProjectSection(SolutionItems) = preProject
+		API.md = API.md
 		README.md = README.md
 	EndProjectSection
 EndProject

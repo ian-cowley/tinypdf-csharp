@@ -6,8 +6,14 @@ namespace TinyPdf;
 
 public partial class TinyPdfCreate
 {
+    /// <summary>
+    /// A builder for constructing PDF documents page by page.
+    /// </summary>
     public partial class Builder
     {
+        /// <summary>
+        /// Gets or sets whether to compress the generated PDF objects. Defaults to true.
+        /// </summary>
         public bool Compress { get; set; } = true;
         private List<PdfObject> _objects = new List<PdfObject>();
         private List<Ref> _pages = new List<Ref>();
@@ -21,6 +27,12 @@ public partial class TinyPdfCreate
             return new Ref(id);
         }
 
+        /// <summary>
+        /// Adds a new page to the PDF with the specified dimensions.
+        /// </summary>
+        /// <param name="width">The width of the page in points.</param>
+        /// <param name="height">The height of the page in points.</param>
+        /// <param name="fn">An action that takes an <see cref="IPageContext"/> to draw on the page.</param>
         public void Page(double width, double height, Action<IPageContext> fn)
         {
             var writer = new ArrayBufferWriter<byte>(1024);
@@ -74,10 +86,24 @@ public partial class TinyPdfCreate
             _pages.Add(pageRef);
         }
 
+        /// <summary>
+        /// Adds a new page to the PDF with default dimensions (Letter: 612x792).
+        /// </summary>
+        /// <param name="fn">An action that takes an <see cref="IPageContext"/> to draw on the page.</param>
         public void Page(Action<IPageContext> fn) => Page(612, 792, fn);
 
+        /// <summary>
+        /// Measures the width of a text string in the default font (Helvetica) and specified size.
+        /// </summary>
+        /// <param name="str">The text to measure.</param>
+        /// <param name="size">The font size.</param>
+        /// <returns>The width of the text in PDF points.</returns>
         public double MeasureText(string str, double size) => TinyPdfCreate.MeasureText(str, size);
 
+        /// <summary>
+        /// Finalizes the PDF construction and returns the raw bytes of the PDF document.
+        /// </summary>
+        /// <returns>The raw bytes of the generated PDF document.</returns>
         public byte[] Build()
         {
             var fontMap = new Dictionary<PdfFont, Ref>();

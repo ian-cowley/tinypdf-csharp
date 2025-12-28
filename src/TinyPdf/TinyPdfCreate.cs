@@ -4,11 +4,30 @@ using System.Text;
 
 namespace TinyPdf;
 
+/// <summary>
+/// The main entry point for creating PDF documents using TinyPdf.
+/// </summary>
 public partial class TinyPdfCreate
 {
+    /// <summary>
+    /// Starts the creation of a new PDF document.
+    /// </summary>
+    /// <returns>A <see cref="Builder"/> instance to configure and build the PDF.</returns>
     public static Builder Create() => new Builder();
 
+    /// <summary>
+    /// Options for rendering text.
+    /// </summary>
+    /// <param name="Align">Text alignment: "left", "center", or "right".</param>
+    /// <param name="Width">The optional maximum width for text wrapping.</param>
+    /// <param name="Color">The text color in hex format (e.g., "#000000").</param>
+    /// <param name="Font">The font to use.</param>
     public record TextOptions(string? Align = "left", double? Width = null, string Color = "#000000", PdfFont Font = PdfFont.Helvetica);
+
+    /// <summary>
+    /// Options for clickable links.
+    /// </summary>
+    /// <param name="Underline">Whether to underline the link. If not null, an underline will be drawn with the specified hex color.</param>
     public record LinkOptions(string? Underline = null);
 
     private static readonly Dictionary<PdfFont, int[]> FontWidths = new()
@@ -32,7 +51,13 @@ public partial class TinyPdfCreate
         [PdfFont.Courier] = Enumerable.Repeat(600, 95).ToArray()
     };
 
-    // public API measure (string)
+    /// <summary>
+    /// Measures the width of a text string in the specified font and size.
+    /// </summary>
+    /// <param name="str">The text to measure.</param>
+    /// <param name="size">The font size.</param>
+    /// <param name="font">The font to use.</param>
+    /// <returns>The width of the text in PDF points.</returns>
     public static double MeasureText(string str, double size, PdfFont font = PdfFont.Helvetica)
     {
         double width = 0;
@@ -258,6 +283,19 @@ public partial class TinyPdfCreate
         WriteUtf8String(writer, str);
     }
 
+    /// <summary>
+    /// Generates a PDF from a Markdown string.
+    /// </summary>
+    /// <param name="md">The Markdown source string.</param>
+    /// <param name="opts">Options for the Markdown rendering, such as page size and margins.</param>
+    /// <returns>The raw bytes of the generated PDF document.</returns>
+    /// <example>
+    /// <code>
+    /// string md = "# Hello World\nThis is a PDF generated from **Markdown**.";
+    /// byte[] pdfBytes = TinyPdfCreate.Markdown(md);
+    /// File.WriteAllBytes("output.pdf", pdfBytes);
+    /// </code>
+    /// </example>
     public static byte[] Markdown(string md, MarkdownOptions? opts = null)
     {
         opts ??= new MarkdownOptions();
