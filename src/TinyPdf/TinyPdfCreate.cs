@@ -150,10 +150,24 @@ public partial class TinyPdfCreate
                     w.Advance(1);
                     i++;
                 }
+                else if (c == '\u2022')
+                {
+                    var span = w.GetSpan(1);
+                    span[0] = 0x95;
+                    w.Advance(1);
+                    i++;
+                }
+                else if (c <= 255)
+                {
+                    var span = w.GetSpan(1);
+                    span[0] = (byte)c;
+                    w.Advance(1);
+                    i++;
+                }
                 else
                 {
                     int j = i + 1;
-                    while (j < s.Length && s[j] > 127) j++;
+                    while (j < s.Length && s[j] > 255 && s[j] != '\u2022') j++;
                     BufferWriteUtf8(w, s.Slice(i, j - i));
                     i = j;
                 }
@@ -377,7 +391,7 @@ public partial class TinyPdfCreate
             {
                 var content = TrimStart(tstart.Slice(2));
                 var wrapped = Wrap(content, bodySize, textW - 18);
-                var p0 = "- ".AsMemory(); var p1 = "  ".AsMemory();
+                var p0 = "\u2022 ".AsMemory(); var p1 = "  ".AsMemory();
                 for (int i = 0; i < wrapped.Count; i++) items.Add(new MarkdownItem(i == 0 ? p0 : p1, wrapped[i], bodySize, 12, 0, 2));
                 prevType = "list"; continue;
             }

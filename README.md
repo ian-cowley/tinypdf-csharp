@@ -3,7 +3,7 @@
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
-- 1027 lines of code
+- 1041 lines of code
 - Zero external dependencies
 - Text rendering (`Helvetica`, `Times`, `Courier`) with alignment support
 - Clickable links with optional underlining
@@ -130,6 +130,7 @@ This C# port preserves the core logic of the original TypeScript library (font w
 By default output streams are compressed (FlateDecode) — set `builder.Compress = false` or pass `new TinyPdfCreate.MarkdownOptions(Compress: false)` to `TinyPdfCreate.Markdown` to disable compression.
 
 Security: do not commit secrets or sensitive configuration to this repository. Use `dotnet user-secrets` or environment variables for local development.
+
 
 
 

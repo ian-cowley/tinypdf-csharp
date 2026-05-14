@@ -107,9 +107,9 @@ public partial class TinyPdfCreate
         public byte[] Build()
         {
             var fontMap = new Dictionary<PdfFont, Ref>();
-            fontMap[PdfFont.Helvetica] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Helvetica" });
-            fontMap[PdfFont.Times] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Times-Roman" });
-            fontMap[PdfFont.Courier] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Courier" });
+            fontMap[PdfFont.Helvetica] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Helvetica", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.Times] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Times-Roman", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.Courier] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Courier", ["Encoding"] = "/WinAnsiEncoding" });
 
             var pagesRef = AddObject(new Dictionary<string, object> { ["Type"] = "/Pages", ["Kids"] = _pages, ["Count"] = _pages.Count });
 

@@ -114,7 +114,7 @@ public class TinyPdfTests
         // The renderer now emits the list bullet and the item text in separate text operators,
         // so assert presence of the item text and the bullet prefix rather than the combined string.
         Assert.Contains("Item 1", content);
-        Assert.Contains("(- ", content);
+        Assert.Contains("(\x95 ", content);
     }
 
     [Fact]
