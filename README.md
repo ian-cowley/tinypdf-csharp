@@ -1,5 +1,10 @@
 # TinyPdf C#
+
+[![DEV.to Story](https://img.shields.io/badge/DEV.to-Story-0a0a0a?style=for-the-badge&logo=devto&logoColor=white)](https://dev.to/iancowley/i-built-a-minimal-zero-dependency-pdf-library-for-c-because-i-hate-bloat-58b1)
 [![NuGet version](https://img.shields.io/nuget/v/TinyPdf.svg)](https://www.nuget.org/packages/TinyPdf/)
+
+> 📖 **Read the Deep-Dive**: **[I built a minimal zero-dependency PDF library for C# because I hate bloat.](https://dev.to/iancowley/i-built-a-minimal-zero-dependency-pdf-library-for-c-because-i-hate-bloat-58b1)**
+
 A minimal PDF creation library for .NET 10, ported from the original [tinypdf](https://github.com/Lulzx/tinypdf) by Lulzx.
 
 ## Features
