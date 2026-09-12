@@ -136,6 +136,12 @@ By default output streams are compressed (FlateDecode) — set `builder.Compress
 
 Security: do not commit secrets or sensitive configuration to this repository. Use `dotnet user-secrets` or environment variables for local development.
 
+---
+
+## Credits
+
+Developed by Ian Cowley and Antigravity (Google DeepMind).
+
 
 
 
