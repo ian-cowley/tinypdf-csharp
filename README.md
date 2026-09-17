@@ -112,22 +112,21 @@ dotnet run -p benchmarks/TinyPdf.Benchmarks
 ```
 
 ## Performance Results
-The following results were obtained by generating 1000 PDFs for each example in parallel:
+The following results were measured on **AMD Ryzen AI 9 HX 370** generating 1,000 PDFs in parallel per document type with the **PB-22 Zero-Copy PooledBufferWriter** memory recycler:
 
-| Example | Iterations | Total Time (ms) | Avg Time (ms) | Complexity |
-|---------|------------|-----------------|---------------|------------|
-| Invoice | 1000 | 270.48 | 0.2705 | Methods: ~320 |
-| Letter | 1000 | 146.33 | 0.1463 | Markdown: ~60 lines |
-| PieChart | 1000 | 40.10 | 0.0401 | Methods: ~20 |
-| Receipt | 1000 | 35.31 | 0.0353 | Methods: ~18 |
-| Report | 1000 | 44.86 | 0.0449 | Methods: ~56 |
-| Resume | 1000 | 99.03 | 0.0990 | Markdown: ~100 lines |
+| Example | Iterations | Total Time (ms) | Avg Latency | Throughput | Complexity |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Receipt** | 1,000 | 49.91 ms | **0.0499 ms** | **20,036 PDFs/s** | Methods: ~18 |
+| **PieChart** | 1,000 | 57.26 ms | **0.0573 ms** | **17,464 PDFs/s** | Methods: ~20 |
+| **Report** | 1,000 | 67.66 ms | **0.0677 ms** | **14,780 PDFs/s** | Methods: ~56 |
+| **Resume** | 1,000 | 146.42 ms | **0.1464 ms** | **6,830 PDFs/s** | Markdown: ~100 lines |
+| **Letter** | 1,000 | 209.26 ms | **0.2093 ms** | **4,778 PDFs/s** | Markdown: ~60 lines |
+| **Invoice** | 1,000 | 336.82 ms | **0.3368 ms** | **2,969 PDFs/s** | Methods: ~320 |
 
-### Zero-Copy Pooled Buffer Writer (PB-22 Optimization)
+### Zero-Copy Memory Architecture (PB-22 Optimization)
 Eliminates defensive byte array heap allocations during PDF binary generation via zero-copy `PooledBufferWriter.GetMemory`:
-- **Receipt PDF Generation**: **0.043 ms (23,255 PDFs/s)** on AMD Ryzen AI 9 HX 370.
-- **PieChart PDF Generation**: **0.048 ms (20,833 PDFs/s)**.
-- **Report PDF Generation**: **0.053 ms (18,867 PDFs/s)**.
+- **Zero GC Pressure**: Output buffers are recycled directly from the shared memory pool.
+- **100% Native Pure C#**: Zero unmanaged wrappers or native DLL dependencies.
 - **Test Suite**: 18/18 rendering and serialization tests pass cleanly.
 
 ## Publishing (Maintainers)
