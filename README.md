@@ -1,3 +1,5 @@
+![tinypdf-csharp Banner](assets/banner.jpg)
+
 # TinyPdf C#
 
 [![DEV.to Story](https://img.shields.io/badge/DEV.to-Story-0a0a0a?style=for-the-badge&logo=devto&logoColor=white)](https://dev.to/iancowley/i-built-a-minimal-zero-dependency-pdf-library-for-c-because-i-hate-bloat-58b1)
