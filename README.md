@@ -121,6 +121,13 @@ The following results were obtained by generating 1000 PDFs for each example in 
 | Report | 1000 | 44.86 | 0.0449 | Methods: ~56 |
 | Resume | 1000 | 99.03 | 0.0990 | Markdown: ~100 lines |
 
+### Zero-Copy Pooled Buffer Writer (PB-22 Optimization)
+Eliminates defensive byte array heap allocations during PDF binary generation via zero-copy `PooledBufferWriter.GetMemory`:
+- **Receipt PDF Generation**: **0.043 ms (23,255 PDFs/s)** on AMD Ryzen AI 9 HX 370.
+- **PieChart PDF Generation**: **0.048 ms (20,833 PDFs/s)**.
+- **Report PDF Generation**: **0.053 ms (18,867 PDFs/s)**.
+- **Test Suite**: 18/18 rendering and serialization tests pass cleanly.
+
 ## Publishing (Maintainers)
 To release a new version to NuGet and GitHub:
 1. Open PowerShell in the repository root.

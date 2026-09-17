@@ -5,7 +5,7 @@ namespace TinyPdf;
 public partial class TinyPdfCreate
 {
     // Pooled growable buffer writer that exposes written chunks so we can stream compressed output
-    private sealed class PooledBufferWriter : IBufferWriter<byte>, IDisposable
+    internal sealed class PooledBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private const int DefaultBlockSize = 8192;
         private readonly List<byte[]> _blocks = new List<byte[]>();
@@ -20,24 +20,28 @@ public partial class TinyPdfCreate
             _written += count;
         }
 
-        public Memory<byte> GetMemory(int sizeHint = 0)
+        private void EnsureCapacity(int sizeHint)
         {
-            var span = GetSpan(sizeHint);
-            // return a Memory copy only for API conformance; callers should use GetSpan where possible
-            var copy = new byte[span.Length];
-            span.CopyTo(copy);
-            return new Memory<byte>(copy);
-        }
-
-        public Span<byte> GetSpan(int sizeHint = 0)
-        {
-            if (_blocks.Count == 0 || _posInLast == _blocks[_blocks.Count - 1].Length)
+            int needed = Math.Max(1, sizeHint);
+            if (_blocks.Count == 0 || (_blocks[_blocks.Count - 1].Length - _posInLast < needed))
             {
-                int newSize = Math.Max(DefaultBlockSize, Math.Max(1, sizeHint));
+                int newSize = Math.Max(DefaultBlockSize, needed);
                 var buf = ArrayPool<byte>.Shared.Rent(newSize);
                 _blocks.Add(buf);
                 _posInLast = 0;
             }
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            EnsureCapacity(sizeHint);
+            var last = _blocks[_blocks.Count - 1];
+            return new Memory<byte>(last, _posInLast, last.Length - _posInLast);
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            EnsureCapacity(sizeHint);
             var last = _blocks[_blocks.Count - 1];
             return new Span<byte>(last, _posInLast, last.Length - _posInLast);
         }

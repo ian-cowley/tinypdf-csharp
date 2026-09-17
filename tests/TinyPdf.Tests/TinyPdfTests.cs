@@ -214,4 +214,47 @@ public class TinyPdfTests
         Assert.Contains("/Rect [50 700 100 712]", content);
         Assert.Contains("0.000 0.000 1.000 RG", content); // Underline color
     }
+
+    [Fact]
+    public void TestPooledBufferWriter_GetMemory_DirectWrite_ZeroDefensiveCopy()
+    {
+        using var writer = new TinyPdfCreate.PooledBufferWriter();
+
+        // 1. GetMemory and write directly into it
+        var mem = writer.GetMemory(128);
+        Assert.True(mem.Length >= 128);
+
+        byte[] expected = [1, 2, 3, 4, 5, 6, 7, 8];
+        expected.CopyTo(mem.Span);
+        writer.Advance(expected.Length);
+
+        Assert.Equal(8, writer.WrittenCount);
+
+        // 2. Stream into memory stream and verify identical content
+        using var ms = new MemoryStream();
+        writer.CopyTo(ms);
+
+        byte[] actual = ms.ToArray();
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void TestPooledBufferWriter_GetMemory_LargeAllocationRespectsSizeHint()
+    {
+        using var writer = new TinyPdfCreate.PooledBufferWriter();
+
+        // Request 16384 bytes, exceeding the default 8192 block size
+        var mem = writer.GetMemory(16384);
+        Assert.True(mem.Length >= 16384);
+
+        mem.Span.Slice(0, 100).Fill(0xAA);
+        writer.Advance(100);
+
+        Assert.Equal(100, writer.WrittenCount);
+
+        using var ms = new MemoryStream();
+        writer.CopyTo(ms);
+        Assert.Equal(100, ms.Length);
+        Assert.Equal(0xAA, ms.ToArray()[50]);
+    }
 }
