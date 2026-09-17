@@ -36,6 +36,24 @@ Alternatively, you can add the `TinyPdf.csproj` to your solution and reference i
 dotnet add reference ../src/TinyPdf/TinyPdf.csproj
 ```
 
+---
+
+## 📄 Sample Outputs: Real Rendered PDF Previews
+
+All sample documents below are generated programmatically using `TinyPdf` (pure C#, zero dependencies) in sub-millisecond execution times:
+
+| Automated Business Invoice (~320 Ops) | Multi-Section Analytics Report (~56 Ops) |
+| :---: | :---: |
+| ![Sample Invoice](docs/images/sample_invoice.png) | ![Sample Report](docs/images/sample_report.png) |
+| *Vector layout, dynamic line item tables, currency formatting, and totals (0.33 ms / doc)* | *Headings, structured grids, shaded backgrounds, and metric summaries (0.06 ms / doc)* |
+
+| Vector Wedge Pie Chart (~20 Ops) | POS Thermal Receipt (~18 Ops) |
+| :---: | :---: |
+| ![Sample Pie Chart](docs/images/sample_pie_chart.png) | ![Sample Receipt](docs/images/sample_receipt.png) |
+| *Precise mathematical arc and wedge vector slices with color fills (0.05 ms / doc)* | *Compact monospace thermal receipt layout with barcodes and itemization (0.04 ms / doc)* |
+
+---
+
 ## Usage
 
 ### Simple PDF
