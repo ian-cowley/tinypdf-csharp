@@ -60,29 +60,25 @@ public partial class TinyPdfCreate
     /// <returns>The width of the text in PDF points.</returns>
     public static double MeasureText(string str, double size, PdfFont font = PdfFont.Helvetica)
     {
+        if (string.IsNullOrEmpty(str)) return 0;
         double width = 0;
-        var widths = FontWidths[font];
         foreach (char c in str)
         {
-            int code = c;
-            int w = (code >= 32 && code <= 126) ? widths[code - 32] : 556;
-            width += w;
+            width += AfmMetrics.GetGlyphWidth(c, font);
         }
-        return (width * size) / 1000;
+        return (width * size) / 1000.0;
     }
 
     // memory/span-based measure
     private static double MeasureText(ReadOnlySpan<char> span, double size, PdfFont font = PdfFont.Helvetica)
     {
+        if (span.IsEmpty) return 0;
         double width = 0;
-        var widths = FontWidths[font];
         for (int i = 0; i < span.Length; i++)
         {
-            int code = span[i];
-            int w = (code >= 32 && code <= 126) ? widths[code - 32] : 556;
-            width += w;
+            width += AfmMetrics.GetGlyphWidth(span[i], font);
         }
-        return (width * size) / 1000;
+        return (width * size) / 1000.0;
     }
 
     private static double MeasureText(ReadOnlyMemory<char> mem, double size, PdfFont font = PdfFont.Helvetica) => MeasureText(mem.Span, size, font);
@@ -499,24 +495,21 @@ public partial class TinyPdfCreate
                                 int len = Math.Max(0, end - (pos + 2));
                                 var run = (end + 1 < span.Length) ? span.Slice(pos + 2, len) : span.Slice(pos + 2, len);
                                 string runStr = new string(run);
-                                // approximate bold by slightly larger size
-                                double boldSize = it.Size * 1.05;
-                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, boldSize, new TextOptions(Font: PdfFont.Helvetica, Color: it.Color));
-                                x += TinyPdfCreate.MeasureText(runStr, boldSize); // use default font for measurement
+                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.HelveticaBold, Color: it.Color));
+                                x += TinyPdfCreate.MeasureText(runStr, it.Size, PdfFont.HelveticaBold);
                                 pos = (end + 2 <= span.Length) ? end + 2 : span.Length;
                                 continue;
                             }
 
                             // detect italic _
-                            if (span[pos] == '_' )
+                            if (span[pos] == '_')
                             {
                                 int end = pos + 1;
                                 while (end < span.Length && span[end] != '_') end++;
                                 var run = span.Slice(pos + 1, Math.Max(0, end - pos - 1));
                                 string runStr = new string(run);
-                                // approximate italic by using same size but darker color
-                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.Helvetica, Color: "#111111"));
-                                x += TinyPdfCreate.MeasureText(runStr, it.Size); // use default font for measurement
+                                ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.HelveticaOblique, Color: it.Color));
+                                x += TinyPdfCreate.MeasureText(runStr, it.Size, PdfFont.HelveticaOblique);
                                 pos = Math.Min(end + 1, span.Length);
                                 continue;
                             }

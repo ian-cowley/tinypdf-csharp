@@ -110,6 +110,17 @@ public partial class TinyPdfCreate
             fontMap[PdfFont.Helvetica] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Helvetica", ["Encoding"] = "/WinAnsiEncoding" });
             fontMap[PdfFont.Times] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Times-Roman", ["Encoding"] = "/WinAnsiEncoding" });
             fontMap[PdfFont.Courier] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Courier", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.HelveticaBold] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Helvetica-Bold", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.HelveticaOblique] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Helvetica-Oblique", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.HelveticaBoldOblique] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Helvetica-BoldOblique", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.TimesBold] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Times-Bold", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.TimesItalic] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Times-Italic", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.TimesBoldItalic] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Times-BoldItalic", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.CourierBold] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Courier-Bold", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.CourierOblique] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Courier-Oblique", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.CourierBoldOblique] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Courier-BoldOblique", ["Encoding"] = "/WinAnsiEncoding" });
+            fontMap[PdfFont.Symbol] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/Symbol" });
+            fontMap[PdfFont.ZapfDingbats] = AddObject(new Dictionary<string, object> { ["Type"] = "/Font", ["Subtype"] = "/Type1", ["BaseFont"] = "/ZapfDingbats" });
 
             var pagesRef = AddObject(new Dictionary<string, object> { ["Type"] = "/Pages", ["Kids"] = _pages, ["Count"] = _pages.Count });
 
@@ -122,9 +133,11 @@ public partial class TinyPdfCreate
                     {
                         if (resources.TryGetValue("Font", out var fontObj) && fontObj is Dictionary<string, object> fonts)
                         {
-                            fonts["F1"] = fontMap[PdfFont.Helvetica];
-                            fonts["F2"] = fontMap[PdfFont.Times];
-                            fonts["F3"] = fontMap[PdfFont.Courier];
+                            foreach (var kvp in fontMap)
+                            {
+                                string tag = GetFontTag(kvp.Key);
+                                fonts[tag.TrimStart('/')] = kvp.Value;
+                            }
                         }
                     }
                 }

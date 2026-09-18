@@ -89,7 +89,7 @@ public partial class TinyPdfCreate
                         }
 
                         BufferWriteAscii(_writer, "BT\n");
-                        string fontTag = opts.Font switch { PdfFont.Times => "/F2", PdfFont.Courier => "/F3", _ => "/F1" };
+                        string fontTag = GetFontTag(opts.Font);
                         BufferWriteAscii(_writer, fontTag); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, size, 2); BufferWriteAscii(_writer, " Tf\n");
 
                         double py = y - i * lineHeight;
@@ -124,7 +124,7 @@ public partial class TinyPdfCreate
                 }
 
                 BufferWriteAscii(_writer, "BT\n");
-                string fontTagDefault = opts.Font switch { PdfFont.Times => "/F2", PdfFont.Courier => "/F3", _ => "/F1" };
+                string fontTagDefault = GetFontTag(opts.Font);
                 BufferWriteAscii(_writer, fontTagDefault); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, size, 2); BufferWriteAscii(_writer, " Tf\n");
 
                 BufferWriteDouble(_writer, tx_default, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y, 2); BufferWriteAscii(_writer, " Td\n");
@@ -275,8 +275,6 @@ public partial class TinyPdfCreate
 
             public void Wedge(double cx, double cy, double radius, double startAngle, double endAngle, string? fill = null, string? stroke = null, double lineWidth = 1)
             {
-                double k = 0.5522847498;
-                
                 BufferWriteDouble(_writer, cx, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy, 2); BufferWriteAscii(_writer, " m\n");
                 
                 double startRad = startAngle * Math.PI / 180.0;
