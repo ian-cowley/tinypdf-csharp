@@ -164,6 +164,15 @@ Security: do not commit secrets or sensitive configuration to this repository. U
 
 ---
 
+## 🆕 What's New in v0.1.11
+
+- **CRITICAL BUG FIX: SFNT `'head'` table `unitsPerEm` at byte offset 18** — the previous implementation read from offset 36, producing incorrect font metrics for TrueType fonts.
+- **TrueType font metrics parser with full SFNT table directory navigation** — correctly traverses the SFNT table directory to locate and parse any named table.
+- **AFM (Adobe Font Metrics) parser for Type1 font metrics** — enables accurate character width lookup for Type1 PostScript fonts.
+- **22 tests** passing (100 %).
+
+---
+
 ## Credits
 
 Developed by Ian Cowley and Antigravity (Google DeepMind).
