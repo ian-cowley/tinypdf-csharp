@@ -159,7 +159,12 @@ public partial class TinyPdfCreate
                 {
                     byte[] streamData = obj.Stream;
                     PooledBufferWriter? pbw = null;
-                    if (Compress)
+                    // Never overwrite pre-encoded streams (e.g., JPEG /DCTDecode XObjects) with /FlateDecode!
+                    bool hasPreEncodedFilter = obj.Dict.TryGetValue("Filter", out var existingFilter)
+                        && existingFilter?.ToString() != "/FlateDecode";
+                    bool shouldCompress = Compress && !hasPreEncodedFilter;
+
+                    if (shouldCompress)
                     {
                         pbw = new PooledBufferWriter();
                         using (var zs = new ZLibStream(new PooledBufferStream(pbw), CompressionLevel.Optimal, leaveOpen: true))
@@ -170,7 +175,14 @@ public partial class TinyPdfCreate
                         obj.Dict["Filter"] = "/FlateDecode";
                         obj.Dict["Length"] = compressedLen;
                     }
-                    else obj.Dict["Length"] = streamData.Length;
+                    else
+                    {
+                        if (!hasPreEncodedFilter)
+                        {
+                            obj.Dict.Remove("Filter");
+                        }
+                        obj.Dict["Length"] = streamData.Length;
+                    }
 
                     var header = Encoding.UTF8.GetBytes($"{obj.Id} 0 obj\n");
                     ms.Write(header, 0, header.Length);
@@ -180,7 +192,7 @@ public partial class TinyPdfCreate
                     var streamMarker = Encoding.UTF8.GetBytes("\nstream\n");
                     ms.Write(streamMarker, 0, streamMarker.Length);
 
-                    if (Compress && pbw is not null)
+                    if (shouldCompress && pbw is not null)
                     {
                         pbw.CopyTo(ms);
                         pbw.Dispose();

@@ -537,4 +537,54 @@ public class TinyPdfTests
         double widthWithEmoji = parser.MeasureText(emojiString, 12.0);
         Assert.True(widthWithEmoji > widthHello, $"Expected text with emoji ({widthWithEmoji}) to be wider than without ({widthHello})");
     }
+
+    [Fact]
+    public void TestImage_PreservesDctDecodeWhenCompressed()
+    {
+        byte[] jpeg = new byte[24];
+        jpeg[0] = 0xFF; jpeg[1] = 0xD8;
+        jpeg[2] = 0xFF; jpeg[3] = 0xC0;
+        jpeg[4] = 0x00; jpeg[5] = 0x11;
+        jpeg[6] = 0x08;
+        jpeg[7] = 0x00; jpeg[8] = 0x40; // Height = 64
+        jpeg[9] = 0x00; jpeg[10] = 0x80; // Width = 128
+        jpeg[22] = 0xFF; jpeg[23] = 0xD9;
+
+        var builder = TinyPdfCreate.Create();
+        builder.Compress = true;
+        builder.Page(ctx =>
+        {
+            ctx.Text(ReadOnlyMemory<char>.Empty, "Header text that gets Flate compressed".AsMemory(), 50, 700, 12);
+            ctx.Image(jpeg, 50, 500, 128, 64);
+        });
+
+        byte[] pdf = builder.Build();
+        string latin1 = Encoding.Latin1.GetString(pdf);
+
+        Assert.Contains("/Filter /FlateDecode", latin1);
+        Assert.Contains("/Filter /DCTDecode", latin1);
+        Assert.Contains($"/Length {jpeg.Length}", latin1);
+        Assert.Contains(Encoding.Latin1.GetString(jpeg), latin1);
+    }
+
+    [Fact]
+    public void TestWinAnsiTypography_NoUtf8Mojibake()
+    {
+        var builder = TinyPdfCreate.Create();
+        builder.Compress = false;
+        builder.Page(ctx =>
+        {
+            ctx.Text(
+                ReadOnlyMemory<char>.Empty,
+                "Price: \u20AC100 / \u00A385 \u2014 \u201CSmart\u201D \u2022 \u2026 \u2192 \u2265 99%".AsMemory(),
+                50, 700, 12);
+        });
+
+        byte[] pdf = builder.Build();
+        string latin1 = Encoding.Latin1.GetString(pdf);
+
+        Assert.Contains("(Price: \x80" + "100 / \xA3" + "85 \x97 \x93Smart\x94 \x95 \x85 -> >= 99%) Tj", latin1);
+        Assert.DoesNotContain("\xE2\x82\xAC", latin1); // No UTF-8 Euro mojibake
+        Assert.DoesNotContain("\xE2\x80\x94", latin1); // No UTF-8 Em-dash mojibake
+    }
 }

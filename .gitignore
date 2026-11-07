@@ -6,9 +6,10 @@
 *.sln.docstates
 
 # Build results
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
 artifacts/
+[Tt]est[Rr]esults/
 
 # Rider
 .idea/
@@ -28,9 +29,11 @@ packages/
 .DS_Store
 Thumbs.db
 
-# Secrets
+# Secrets and local configuration
 secrets.json
-appsettings.*.json
+appsettings*.json
+!appsettings.template.json
+*.env*
 
 # JetBrains
 *.iml
@@ -42,8 +45,5 @@ appsettings.*.json
 # Benchmark artifacts
 BenchmarkDotNet.Artifacts/
 
-# dotnet-user-secrets
-secrets.json
-
 # Local tool manifest
-.tool/ 
+.tool/

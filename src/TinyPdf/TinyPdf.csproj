@@ -3,11 +3,15 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.1.11</Version>
+    <IsAotCompatible>true</IsAotCompatible>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Version>0.2.0</Version>
     <PackageId>TinyPdf</PackageId>
     <Authors>Ian Cowley</Authors>
-    <Description>TinyPdf is a minimal in-process PDF generation library targeting .NET.</Description>
-    <PackageTags>pdf,tiny,pdf-generator</PackageTags>
+    <Description>TinyPdf is a minimal, zero-dependency, Native AOT-compatible PDF generation library targeting .NET 10.</Description>
+    <PackageTags>pdf;tiny;pdf-generator;aot;net10;glacier</PackageTags>
     <RepositoryUrl>https://github.com/ian-cowley/tinypdf-csharp</RepositoryUrl>
     <PackageProjectUrl>https://github.com/ian-cowley/tinypdf-csharp</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -2,20 +2,26 @@ name: .NET build, test, and publish
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
     tags: ['v*']
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
-  
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
+      id-token: write
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      # Map the secret here so ALL steps can see it in their 'if' conditions
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      DOTNET_NOLOGO: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
@@ -27,8 +33,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-          # Caching disabled for now to stop the YAML error
-          
+
       - name: Restore dependencies
         run: dotnet restore
 
@@ -36,18 +41,25 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test tests/TinyPdf.Tests/TinyPdf.Tests.csproj --configuration Release --no-restore --no-build
+        run: dotnet test tests/TinyPdf.Tests/TinyPdf.Tests.csproj --configuration Release --no-restore --no-build --blame-hang --blame-hang-dump-type none --blame-hang-timeout 60s
 
       - name: Pack TinyPdf
-        run: dotnet pack src/TinyPdf/TinyPdf.csproj --configuration Release --no-restore --output artifacts
+        run: dotnet pack src/TinyPdf/TinyPdf.csproj --configuration Release --no-build --output artifacts
+
+      - name: NuGet login (OIDC Trusted Publishing)
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: spuriousbugfix
 
       - name: Publish to nuget.org
-        if: env.NUGET_API_KEY != '' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
-        run: dotnet nuget push "artifacts/*.nupkg" --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+        if: steps.login.outputs.NUGET_API_KEY != ''
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish to GitHub Packages
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
-        run: dotnet nuget push "artifacts/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --skip-duplicate
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.GITHUB_TOKEN }}" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')

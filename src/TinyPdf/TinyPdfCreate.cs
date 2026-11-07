@@ -30,27 +30,6 @@ public partial class TinyPdfCreate
     /// <param name="Underline">Whether to underline the link. If not null, an underline will be drawn with the specified hex color.</param>
     public record LinkOptions(string? Underline = null);
 
-    private static readonly Dictionary<PdfFont, int[]> FontWidths = new()
-    {
-        [PdfFont.Helvetica] = new int[] {
-            278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,
-            556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
-            1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,
-            667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
-            333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,
-            556,556,333,500,278,556,500,722,500,500,500,334,260,334,584
-        },
-        [PdfFont.Times] = new int[] {
-            250,333,408,500,500,833,778,180,333,333,500,564,250,333,250,278,
-            500,500,500,500,500,500,500,500,500,500,278,278,564,564,564,444,
-            921,722,667,667,722,611,556,722,722,333,389,722,611,889,722,722,
-            556,722,667,556,611,722,722,944,722,722,611,333,278,333,469,500,
-            333,444,500,444,500,444,333,500,500,278,278,500,278,778,500,500,
-            500,500,333,389,278,500,500,722,500,500,444,480,200,480,541
-        },
-        [PdfFont.Courier] = Enumerable.Repeat(600, 95).ToArray()
-    };
-
     /// <summary>
     /// Measures the width of a text string in the specified font and size.
     /// </summary>
@@ -125,53 +104,63 @@ public partial class TinyPdfCreate
         BufferWriteUtf8(w, val.ToString(CultureInfo.InvariantCulture));
     }
 
-    private static void BufferWritePdfString(IBufferWriter<byte> w, ReadOnlySpan<char> prefix, ReadOnlySpan<char> content)
+    private static void WriteWinAnsiEscaped(IBufferWriter<byte> w, ReadOnlySpan<char> s)
     {
-        BufferWriteAscii(w, "(");
-        void writeEsc(ReadOnlySpan<char> s)
+        int i = 0;
+        while (i < s.Length)
         {
-            int i = 0;
-            while (i < s.Length)
+            char c = s[i];
+            if (c == '\\') { BufferWriteAscii(w, "\\\\"); i++; }
+            else if (c == '(') { BufferWriteAscii(w, "\\("); i++; }
+            else if (c == ')') { BufferWriteAscii(w, "\\)"); i++; }
+            else if (c == '\r') { BufferWriteAscii(w, "\\r"); i++; }
+            else if (c == '\n') { BufferWriteAscii(w, "\\n"); i++; }
+            else
             {
-                char c = s[i];
-                if (c == '\\') { BufferWriteAscii(w, "\\\\"); i++; }
-                else if (c == '(') { BufferWriteAscii(w, "\\("); i++; }
-                else if (c == ')') { BufferWriteAscii(w, "\\)"); i++; }
-                else if (c == '\r') { BufferWriteAscii(w, "\\r"); i++; }
-                else if (c == '\n') { BufferWriteAscii(w, "\\n"); i++; }
-                else if (c <= 127)
+                int winAnsi = AfmMetrics.UnicodeToWinAnsi(c);
+                if (winAnsi >= 0)
                 {
                     var span = w.GetSpan(1);
-                    span[0] = (byte)c;
-                    w.Advance(1);
-                    i++;
-                }
-                else if (c == '\u2022')
-                {
-                    var span = w.GetSpan(1);
-                    span[0] = 0x95;
-                    w.Advance(1);
-                    i++;
-                }
-                else if (c <= 255)
-                {
-                    var span = w.GetSpan(1);
-                    span[0] = (byte)c;
+                    span[0] = (byte)winAnsi;
                     w.Advance(1);
                     i++;
                 }
                 else
                 {
-                    int j = i + 1;
-                    while (j < s.Length && s[j] > 255 && s[j] != '\u2022') j++;
-                    BufferWriteUtf8(w, s.Slice(i, j - i));
-                    i = j;
+                    switch (c)
+                    {
+                        case '\u2212': BufferWriteAscii(w, "-"); i++; break;
+                        case '\u2192': BufferWriteAscii(w, "->"); i++; break;
+                        case '\u2190': BufferWriteAscii(w, "<-"); i++; break;
+                        case '\u2194': BufferWriteAscii(w, "<->"); i++; break;
+                        case '\u2265': BufferWriteAscii(w, ">="); i++; break;
+                        case '\u2264': BufferWriteAscii(w, "<="); i++; break;
+                        case '\u2260': BufferWriteAscii(w, "!="); i++; break;
+                        case '\u2248': BufferWriteAscii(w, "~="); i++; break;
+                        default:
+                            if (char.IsHighSurrogate(c) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]))
+                            {
+                                i += 2;
+                            }
+                            else
+                            {
+                                i++;
+                            }
+                            var fallbackSpan = w.GetSpan(1);
+                            fallbackSpan[0] = (byte)'?';
+                            w.Advance(1);
+                            break;
+                    }
                 }
             }
         }
+    }
 
-        if (!prefix.IsEmpty) writeEsc(prefix);
-        if (!content.IsEmpty) writeEsc(content);
+    private static void BufferWritePdfString(IBufferWriter<byte> w, ReadOnlySpan<char> prefix, ReadOnlySpan<char> content)
+    {
+        BufferWriteAscii(w, "(");
+        if (!prefix.IsEmpty) WriteWinAnsiEscaped(w, prefix);
+        if (!content.IsEmpty) WriteWinAnsiEscaped(w, content);
         BufferWriteAscii(w, ")");
     }
 
@@ -185,53 +174,8 @@ public partial class TinyPdfCreate
 
     private static void SerializeToWriter(IBufferWriter<byte> writer, object? val)
     {
-        static void WriteAscii(IBufferWriter<byte> w, string s)
-        {
-            var span = w.GetSpan(s.Length);
-            for (int i = 0; i < s.Length; i++) span[i] = (byte)s[i];
-            w.Advance(s.Length);
-        }
-
-        static void WriteUtf8String(IBufferWriter<byte> w, ReadOnlySpan<char> chars)
-        {
-            int byteCount = Encoding.UTF8.GetByteCount(chars);
-            var span = w.GetSpan(byteCount);
-            int written = Encoding.UTF8.GetBytes(chars, span);
-            w.Advance(written);
-        }
-
-        static void WritePdfString(IBufferWriter<byte> w, string s)
-        {
-            WriteAscii(w, "(");
-            int i = 0;
-            while (i < s.Length)
-            {
-                char c = s[i];
-                if (c == '\\') { WriteAscii(w, "\\\\"); i++; }
-                else if (c == '(') { WriteAscii(w, "\\("); i++; }
-                else if (c == ')') { WriteAscii(w, "\\)"); i++; }
-                else if (c == '\r') { WriteAscii(w, "\\r"); i++; }
-                else if (c == '\n') { WriteAscii(w, "\\n"); i++; }
-                else if (c <= 127)
-                {
-                    var span = w.GetSpan(1);
-                    span[0] = (byte)c;
-                    w.Advance(1);
-                    i++;
-                }
-                else
-                {
-                    int j = i + 1;
-                    while (j < s.Length && s[j] > 127) j++;
-                    WriteUtf8String(w, s.AsSpan(i, j - i));
-                    i = j;
-                }
-            }
-            WriteAscii(w, ")");
-        }
-
-        if (val == null) { WriteAscii(writer, "null"); return; }
-        if (val is bool bb) { WriteAscii(writer, bb ? "true" : "false"); return; }
+        if (val == null) { BufferWriteAscii(writer, "null"); return; }
+        if (val is bool bb) { BufferWriteAscii(writer, bb ? "true" : "false"); return; }
         if (val is int ii)
         {
             var span = writer.GetSpan(16);
@@ -252,45 +196,46 @@ public partial class TinyPdfCreate
         }
         if (val is string s)
         {
-            if (s.StartsWith('/')) { WriteUtf8String(writer, s); return; }
-            if (s.StartsWith('(')) { WriteUtf8String(writer, s); return; }
-            WritePdfString(writer, s);
+            if (s.StartsWith('/')) { BufferWriteUtf8(writer, s); return; }
+            if (s.StartsWith('(')) { BufferWriteUtf8(writer, s); return; }
+            BufferWritePdfString(writer, ReadOnlySpan<char>.Empty, s.AsSpan());
             return;
         }
-        if (val is Ref r) {
+        if (val is Ref r)
+        {
             var span = writer.GetSpan(16);
             if (System.Buffers.Text.Utf8Formatter.TryFormat(r.Id, span, out int bytesWritten)) writer.Advance(bytesWritten);
-            WriteAscii(writer, " 0 R");
+            BufferWriteAscii(writer, " 0 R");
             return;
         }
         if (val is IDictionary<string, object> dict)
         {
-            WriteAscii(writer, "<<\n");
+            BufferWriteAscii(writer, "<<\n");
             foreach (var kvp in dict)
             {
-                WriteAscii(writer, "/"); WriteAscii(writer, kvp.Key); WriteAscii(writer, " ");
+                BufferWriteAscii(writer, "/"); BufferWriteAscii(writer, kvp.Key); BufferWriteAscii(writer, " ");
                 SerializeToWriter(writer, kvp.Value);
-                WriteAscii(writer, "\n");
+                BufferWriteAscii(writer, "\n");
             }
-            WriteAscii(writer, ">>");
+            BufferWriteAscii(writer, ">>");
             return;
         }
         if (val is System.Collections.IEnumerable enumerable && val is not string)
         {
-            WriteAscii(writer, "[");
+            BufferWriteAscii(writer, "[");
             bool first = true;
             foreach (var item in enumerable)
             {
-                if (!first) WriteAscii(writer, " ");
+                if (!first) BufferWriteAscii(writer, " ");
                 SerializeToWriter(writer, item);
                 first = false;
             }
-            WriteAscii(writer, "]");
+            BufferWriteAscii(writer, "]");
             return;
         }
 
         var str = val.ToString() ?? "null";
-        WriteUtf8String(writer, str);
+        BufferWriteUtf8(writer, str);
     }
 
     /// <summary>
@@ -493,7 +438,7 @@ public partial class TinyPdfCreate
                                 int end = pos + 2;
                                 while (end + 1 < span.Length && !(span[end] == '*' && span[end + 1] == '*')) end++;
                                 int len = Math.Max(0, end - (pos + 2));
-                                var run = (end + 1 < span.Length) ? span.Slice(pos + 2, len) : span.Slice(pos + 2, len);
+                                var run = span.Slice(pos + 2, len);
                                 string runStr = new string(run);
                                 ctx.Text(ReadOnlyMemory<char>.Empty, runStr.AsMemory(), x, py, it.Size, new TextOptions(Font: PdfFont.HelveticaBold, Color: it.Color));
                                 x += TinyPdfCreate.MeasureText(runStr, it.Size, PdfFont.HelveticaBold);
@@ -520,7 +465,7 @@ public partial class TinyPdfCreate
                             var normal = span.Slice(pos, j - pos);
                             string normalStr = new string(normal);
                             ctx.Text(ReadOnlyMemory<char>.Empty, normalStr.AsMemory(), x, py, it.Size, new TextOptions(Color: it.Color, Font: PdfFont.Helvetica));
-                            x += TinyPdfCreate.MeasureText(normalStr, it.Size); // use default font for measurement
+                            x += TinyPdfCreate.MeasureText(normalStr, it.Size);
                             pos = j;
                         }
                     }

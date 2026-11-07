@@ -170,9 +170,9 @@ public partial class TinyPdfCreate
             public void Image(byte[] jpegBytes, double x, double y, double w, double h)
             {
                 int imgWidth = 0, imgHeight = 0;
-                for (int i = 0; i < jpegBytes.Length - 1; i++)
+                for (int i = 0; i + 8 < jpegBytes.Length; i++)
                 {
-                    if (jpegBytes[i] == 0xFF && (jpegBytes[i+1] == 0xC0 || jpegBytes[i+1] == 0xC2))
+                    if (jpegBytes[i] == 0xFF && (jpegBytes[i + 1] == 0xC0 || jpegBytes[i + 1] == 0xC1 || jpegBytes[i + 1] == 0xC2))
                     {
                         imgHeight = (jpegBytes[i + 5] << 8) | jpegBytes[i + 6];
                         imgWidth = (jpegBytes[i + 7] << 8) | jpegBytes[i + 8];
@@ -232,15 +232,15 @@ public partial class TinyPdfCreate
                 BufferWriteDouble(_writer, cx + r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy + k_r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx + k_r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy + r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy + r, 2); BufferWriteAscii(_writer, " c\n");
-                
+
                 BufferWriteDouble(_writer, cx - k_r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy + r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx - r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy + k_r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx - r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy, 2); BufferWriteAscii(_writer, " c\n");
-                
+
                 BufferWriteDouble(_writer, cx - r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy - k_r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx - k_r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy - r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy - r, 2); BufferWriteAscii(_writer, " c\n");
-                
+
                 BufferWriteDouble(_writer, cx + k_r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy - r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx + r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy - k_r, 2); BufferWriteAscii(_writer, " ");
                 BufferWriteDouble(_writer, cx + r, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy, 2); BufferWriteAscii(_writer, " c\n");
@@ -276,44 +276,44 @@ public partial class TinyPdfCreate
             public void Wedge(double cx, double cy, double radius, double startAngle, double endAngle, string? fill = null, string? stroke = null, double lineWidth = 1)
             {
                 BufferWriteDouble(_writer, cx, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cy, 2); BufferWriteAscii(_writer, " m\n");
-                
+
                 double startRad = startAngle * Math.PI / 180.0;
                 double endRad = endAngle * Math.PI / 180.0;
                 double startX = cx + radius * Math.Cos(startRad);
                 double startY = cy + radius * Math.Sin(startRad);
-                
+
                 BufferWriteDouble(_writer, startX, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, startY, 2); BufferWriteAscii(_writer, " l\n");
-                
+
                 double sweepAngle = endRad - startRad;
                 if (sweepAngle < 0) sweepAngle += 2 * Math.PI;
-                
+
                 int segments = (int)Math.Ceiling(Math.Abs(sweepAngle) / (Math.PI / 2));
                 double segmentAngle = sweepAngle / segments;
-                
+
                 for (int i = 0; i < segments; i++)
                 {
                     double a1 = startRad + i * segmentAngle;
                     double a2 = startRad + (i + 1) * segmentAngle;
-                    
+
                     double x1 = cx + radius * Math.Cos(a1);
                     double y1 = cy + radius * Math.Sin(a1);
                     double x2 = cx + radius * Math.Cos(a2);
                     double y2 = cy + radius * Math.Sin(a2);
-                    
+
                     // Standard approximation for a circular arc with Bezier curve:
                     // alpha = 4/3 * tan(theta / 4)
                     double alpha = (4.0 / 3.0) * Math.Tan(segmentAngle / 4.0);
-                    
+
                     double cp1x = x1 - alpha * radius * Math.Sin(a1);
                     double cp1y = y1 + alpha * radius * Math.Cos(a1);
                     double cp2x = x2 + alpha * radius * Math.Sin(a2);
                     double cp2y = y2 - alpha * radius * Math.Cos(a2);
-                    
+
                     BufferWriteDouble(_writer, cp1x, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cp1y, 2); BufferWriteAscii(_writer, " ");
                     BufferWriteDouble(_writer, cp2x, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, cp2y, 2); BufferWriteAscii(_writer, " ");
                     BufferWriteDouble(_writer, x2, 2); BufferWriteAscii(_writer, " "); BufferWriteDouble(_writer, y2, 2); BufferWriteAscii(_writer, " c\n");
                 }
-                
+
                 BufferWriteAscii(_writer, "h\n");
 
                 if (fill != null)
